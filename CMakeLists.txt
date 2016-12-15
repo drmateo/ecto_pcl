@@ -18,7 +18,7 @@ include_directories(SYSTEM
 )
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-find_package(Boost COMPONENTS signals thread)
+find_package(Boost COMPONENTS signals thread python)
 
 ecto_sphinx(${CMAKE_CURRENT_SOURCE_DIR}/doc doc)
 

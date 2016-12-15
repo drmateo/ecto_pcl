@@ -5,7 +5,6 @@
  *      Author: tcavallari
  */
 
-#include <iostream>
 #include <ecto/ecto.hpp>
 #include <ecto_pcl/ecto_pcl.hpp>
 #include <ecto_pcl/pcl_cell.hpp>
@@ -13,6 +12,10 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/filters/passthrough.h>
+
+#include <iostream>
+
+
 
 namespace ecto
 {

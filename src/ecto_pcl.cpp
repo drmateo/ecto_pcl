@@ -27,12 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <ecto/ecto.hpp>
+#include <ecto_pcl/ecto_pcl.hpp>
+
 #include <boost/python.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/stringize.hpp>
-#include <ecto/ecto.hpp>
-#include <ecto_pcl/ecto_pcl.hpp>
 
 /* enumerations and values to be wrapped */
 #include <pcl/sample_consensus/model_types.h>
