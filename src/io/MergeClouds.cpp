@@ -29,7 +29,6 @@
 
 #include <ecto_pcl/ecto_pcl.hpp>
 #include <ecto_pcl/pcl_cell_dual_inputs.hpp>
-
 #include <string>
 
 namespace ecto {
