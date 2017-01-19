@@ -1,18 +1,29 @@
 set(ECTO_PCL_FILES
   ecto_pcl.cpp
-  features/NormalEstimation.cpp
+  keypoints/HarrisKeypoint3D.cpp
+  features/CVFHEstimation.cpp
+  features/ESFEstimation.cpp
   features/FPFHEstimation.cpp
+  features/GRSDEstimation.cpp
+  features/NormalEstimation.cpp
+  features/OURCVFHEstimation.cpp
   features/PFHEstimation.cpp
+  features/RSDEstimation.cpp
+  features/SHOTEstimation.cpp
+  features/SIEstimation.cpp
+  features/USCEstimation.cpp
   features/VFHEstimation.cpp
   filters/Cropper.cpp
   filters/ExtractIndices.cpp
   filters/PassThrough.cpp
   filters/PassThroughIndices.cpp
   filters/ProjectInliers.cpp
+  filters/RemoveNaNPoints.cpp
   filters/StatisticalOutlier.cpp
   filters/RadiusOutlier.cpp
   filters/VoxelGrid.cpp
   io/CloudViewer.cpp
+  io/CopyCloud.cpp
 #  io/KinectGrabber.cpp
   io/MergeClouds.cpp
   io/NiConverters.cpp

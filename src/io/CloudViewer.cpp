@@ -32,6 +32,7 @@
 #include <pcl/visualization/pcl_visualizer.h>
 
 #include <boost/variant/get.hpp>
+#include <sstream>
 
 namespace ecto
 {
@@ -66,6 +67,7 @@ namespace ecto
       void
       run()
       {
+//        ECTO_SCOPED_CALLPYTHON();
         quit = false;
         viewer_.reset(new PCLVisualizer(window_name));
         viewer_->setBackgroundColor(0, 0, 255);
@@ -127,7 +129,17 @@ namespace ecto
             viewer->addPointCloud(cloud, rgb, key);
           }
 //          viewer->updatePointCloud(cloud,normals,key);
-        }
+
+//          Eigen::Affine3f pose = Eigen::Affine3f::Identity();
+//          Eigen::Matrix3f r = (*cloud).sensor_orientation_.matrix();
+//          Eigen::Vector3f t = Eigen::Vector3f((*cloud).sensor_origin_.x(), (*cloud).sensor_origin_.y(), (*cloud).sensor_origin_.z());
+//          pose.rotate(r);
+//	      pose.pretranslate(t);
+//	      std::stringstream ss;
+//	      static int i = 0;
+//	      ss << std::string("camera_pose_") << (i++);
+//		  viewer->addCoordinateSystem(0.1,pose,ss.str());
+	}
 
         boost::shared_ptr<PCLVisualizer> viewer;
         std::string key;

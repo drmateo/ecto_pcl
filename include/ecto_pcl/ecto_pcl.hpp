@@ -39,10 +39,20 @@
 #include <boost/preprocessor/punctuation/comma.hpp>
 #include <boost/preprocessor/cat.hpp>
 
+#define PCL_NO_PRECOMPILE
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/PointIndices.h>
 #include <pcl/ModelCoefficients.h>
+
+namespace ecto {
+  namespace pcl{
+    typedef ::pcl::Histogram<153> Histogram153;
+  }
+}
+
+POINT_CLOUD_REGISTER_POINT_STRUCT (ecto::pcl::Histogram153, (float[153], histogram, Histogram153))
 
 #define ECTO_XYZ_POINT_TYPES                         \
   ((pcl::PointXYZRGB, POINTXYZRGB))                  \
@@ -50,14 +60,20 @@
   ((pcl::PointNormal, POINTNORMAL))                  \
   ((pcl::PointXYZI, POINTXYZI))                      \
   ((pcl::PointXYZRGBA, POINTXYZRGBA))                \
-  ((pcl::PointXYZRGBNormal, POINTXYZRGBNORMAL))
+  ((pcl::PointXYZRGBNormal, POINTXYZRGBNORMAL))		   \
+  ((pcl::PointXYZRGBL, POINTXYZRGBL))
 
 #define ECTO_FEATURE_POINT_TYPES                     \
   ((pcl::Normal, NORMAL))                            \
   ((pcl::PFHSignature125, PFHSIGNATURE125))          \
   ((pcl::FPFHSignature33, FPFHSIGNATURE33))          \
   ((pcl::VFHSignature308, VFHSIGNATURE308))          \
-  ((pcl::Narf36, NARF36))
+  ((pcl::UniqueShapeContext1960, UniqueShapeContext1960)) \
+  ((pcl::GRSDSignature21, GRSDSIGNATURE21))          \
+  ((pcl::SHOT352, SHOT352))                          \
+  ((pcl::Narf36, NARF36))                            \
+  ((pcl::PrincipalRadiiRSD, PRINCIPALRADIIRSD)) \
+  ((ecto::pcl::Histogram153, HISTOGRAM153))
 
 #define DECLARECLOUD(r, data, ELEM) \
   typedef pcl::PointCloud< BOOST_PP_TUPLE_ELEM(2, 0, ELEM) > BOOST_PP_CAT(Cloud, BOOST_PP_TUPLE_ELEM(2, 1, ELEM));
@@ -121,6 +137,9 @@ namespace ecto{
       }
       FeatureCloud() {}
       feature_cloud_variant_t make_variant() { return held->make_variant();  }
+
+      template<typename T>
+      typename T::ConstPtr cast() { return boost::get<typename T::ConstPtr>(held->make_variant());}
     };
 
     typedef ::pcl::PointIndices Indices;
@@ -133,12 +152,16 @@ namespace ecto{
       FORMAT_XYZI,
       FORMAT_XYZRGB,
       FORMAT_XYZRGBA,
+      FORMAT_XYZRGBL,
       FORMAT_XYZRGBNORMAL,
       FORMAT_POINTNORMAL,
       FORMAT_NORMAL,
       FORMAT_PFHSIGNATURE,
       FORMAT_FPFHSIGNATURE,
-      FORMAT_VFHSIGNATURE
+      FORMAT_VFHSIGNATURE,
+      FORMAT_UNIQUESHAPECONTEXT,
+      FORMAT_GRSDSIGNATURE,
+      FORMAT_SHOT
     };
 
   }

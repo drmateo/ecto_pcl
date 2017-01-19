@@ -30,6 +30,7 @@
 #include <ecto/ecto.hpp>
 #include <ecto_pcl/ecto_pcl.hpp>
 #include <pcl/io/pcd_io.h>
+#include <pcl/io/io_exception.h>
 #include <boost/format.hpp>
 #include <boost/format/free_funcs.hpp>
 
@@ -47,16 +48,31 @@ namespace ecto {
                                      "must succeed with a single unsigned int argument.",
                                      "cloud_%04u.pcd");
         params.declare<bool> ("binary", "Use binary encoding.", false);
+        params.declare<bool> ("is_feature", "If true, It will be save feature stream.", false);
       }
 
       static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare<PointCloud>("input", "A point cloud to put in a pcd file.");
+        // A workarround to save features in a PCD, We can do that since first are set up
+        // the params in the cell life cycle
+        if (params["is_feature"]->get<bool>())
+          inputs.declare<FeatureCloud>("input", "A point cloud to put in a pcd file.");
+        else
+          inputs.declare<PointCloud>("input", "A point cloud to put in a pcd file.");
+
+        outputs.declare<std::string>("output", "The name of the pcd file where it's save the point cloud.");
       }
 
       void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        input_ = inputs["input"];
+        is_feature_ = params["is_feature"];
+
+        if (*is_feature_)
+          feature_ = inputs["input"];
+        else
+          input_ = inputs["input"];
+
+        output_ = outputs["output"];
         filename_format_ = params["filename_format"];
         binary_ = params["binary"];
       }
@@ -71,7 +87,17 @@ namespace ecto {
         void operator()(CloudType& cloud) const
         {
           if(binary)
-            ::pcl::io::savePCDFileBinary(file, *cloud);
+          {
+            try
+            {
+              ::pcl::io::savePCDFileBinary(file, *cloud);
+            }
+            catch (const std::exception& e)
+            {
+              std::string error_msg = std::string("\033[31;1m")+std::string(e.what())+std::string("\033[0m");
+              std::cerr << error_msg << std::endl;
+            }
+          }
           else
           {
             ::pcl::PCDWriter writer;
@@ -89,16 +115,28 @@ namespace ecto {
       int process(const tendrils& /*inputs*/, const tendrils& outputs)
       {
         std::string filename = boost::str(boost::format(*filename_format_)%count_++);
-        xyz_cloud_variant_t cv = input_->make_variant();
-        boost::apply_visitor(write_dispatch(filename,*binary_), cv);
-        return 0;
+        if (*is_feature_)
+        {
+          feature_cloud_variant_t cv = feature_->make_variant();
+          boost::apply_visitor(write_dispatch(filename,*binary_), cv);
+        }
+        else
+        {
+          xyz_cloud_variant_t cv = input_->make_variant();
+          boost::apply_visitor(write_dispatch(filename,*binary_), cv);
+        }
+
+        *output_ = filename;
+        return ecto::OK;
       }
 
       spore<PointCloud> input_;
+      spore<std::string> output_;
       spore<std::string> filename_format_;
       spore<bool> binary_;
       unsigned count_;
-
+      spore<bool> is_feature_;
+      spore<FeatureCloud> feature_;
     };
 
   }
