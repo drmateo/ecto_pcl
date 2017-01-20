@@ -27,8 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <pcl/features/shot.h>
 #include "FeatureEstimator.hpp"
+#include <pcl/features/shot.h>
 
 namespace ecto {
   namespace pcl {

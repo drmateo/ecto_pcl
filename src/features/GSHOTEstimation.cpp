@@ -27,13 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CVFHEstimation.hpp"
+#include "FeatureEstimator.hpp"
+#include <pcl/features/gshot.h>
 
 namespace ecto {
   namespace pcl {
-    typedef CVFHEstimationImpl<> CVFHEstimation;
+    typedef ecto::pcl::EstimationWithReferenceFrame< ::pcl::SHOT352, ::pcl::GSHOTEstimation > GSHOTEstimation;
   }
 }
 
-ECTO_CELL(ecto_pcl, ecto::pcl::PclCellWithNormals<ecto::pcl::CVFHEstimation>,  "CVFHEstimation", "This cell provides Clustered Viewpoint Feature Histogram estimation.");
-
+ECTO_CELL(ecto_pcl, ecto::pcl::PclCellWithNormals<ecto::pcl::GSHOTEstimation>, "GSHOTEstimation", "This cell provides Global Signature of Histograma of OrienTations estimation.");

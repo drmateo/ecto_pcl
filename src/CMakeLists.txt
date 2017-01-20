@@ -5,6 +5,7 @@ set(ECTO_PCL_FILES
   features/ESFEstimation.cpp
   features/FPFHEstimation.cpp
   features/GRSDEstimation.cpp
+  features/GSHOTEstimation.cpp
   features/NormalEstimation.cpp
   features/OURCVFHEstimation.cpp
   features/PFHEstimation.cpp

@@ -29,14 +29,17 @@
 
 #include <ecto_pcl/ecto_pcl.hpp>
 #include <ecto_pcl/pcl_cell_with_normals.hpp>
+#include <pcl/search/kdtree.h>
 #include <pcl/console/time.h>
 
 namespace ecto {
   namespace pcl {
-
-    template<typename PointT, template <class A, class B, class C > class EstimatorT>
-    struct Estimation
+    struct EstimationBase
     {
+      EstimationBase () {}
+
+      virtual ~EstimationBase() {};
+
       static void declare_params(ecto::tendrils& params)
       {
         params.declare<int> ("k_search", "The number of k nearest neighbors to use for feature estimation.", 0);
@@ -62,6 +65,30 @@ namespace ecto {
         surface_ = inputs["surface"];
         output_ = outputs["output"];
       }
+
+      template <typename Point>
+      int process(const tendrils& inputs, const tendrils& outputs,
+                          boost::shared_ptr<const ::pcl::PointCloud<Point> >& input,
+                          boost::shared_ptr<const ::pcl::PointCloud< ::pcl::Normal> >& normals)
+      {
+        throw ::pcl::IOException ("ERROR: EstimationBase is an interface class, it's not allow use it.");
+      }
+
+      ecto::spore<int> k_;
+      ecto::spore<double> radius_;
+      ecto::spore<int> locator_;
+      ecto::spore<std::string> name_;
+      ecto::spore<bool> vervose_;
+      ecto::spore<ecto::pcl::PointCloud> surface_;
+      ecto::spore<ecto::pcl::FeatureCloud> output_;
+    };
+
+    template<typename PointT, template <class A, class B, class C > class EstimatorT>
+    struct Estimation : EstimationBase
+    {
+      Estimation() {}
+
+      virtual ~Estimation() {}
 
       template <typename Point>
       int process(const tendrils& inputs, const tendrils& outputs,
@@ -92,43 +119,14 @@ namespace ecto {
         return ecto::OK;
       }
 
-      ecto::spore<int> k_;
-      ecto::spore<double> radius_;
-      ecto::spore<int> locator_;
-      ecto::spore<std::string> name_;
-      ecto::spore<bool> vervose_;
-      ecto::spore<ecto::pcl::PointCloud> surface_;
-      ecto::spore<ecto::pcl::FeatureCloud> output_;
     };
 
     template<typename PointT, template <class A, class B, class C, class D> class EstimatorT>
-    struct EstimationWithReferenceFrame
+    struct EstimationWithReferenceFrame : EstimationBase
     {
-      static void declare_params(ecto::tendrils& params)
-      {
-        params.declare<int> ("k_search", "The number of k nearest neighbors to use for feature estimation.", 0);
-        params.declare<double> ("radius_search", "The sphere radius to use for determining the nearest neighbors used for feature estimation.", 0);
-        params.declare<int> ("spatial_locator", "The search method to use: FLANN(0), ORGANIZED(1).",0);
-        params.declare<std::string> ("name", "Feature name.", "feature");
-        params.declare<bool> ("vervose", "Output information about the computation.", false);
-      }
+      EstimationWithReferenceFrame() {}
 
-      static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
-      {
-        inputs.declare<ecto::pcl::PointCloud> ("surface", "Cloud surface.");
-        outputs.declare<ecto::pcl::FeatureCloud> ("output", "Cloud of features.");
-      }
-
-      void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
-      {
-        k_ = params["k_search"];
-        radius_ = params["radius_search"];
-        locator_ = params["spatial_locator"];
-        name_ = params["name"];
-        vervose_ = params["vervose"];
-        surface_ = inputs["surface"];
-        output_ = outputs["output"];
-      }
+      virtual ~EstimationWithReferenceFrame() {}
 
       template <typename Point>
       int process(const tendrils& inputs, const tendrils& outputs,
@@ -158,14 +156,6 @@ namespace ecto {
         *output_ = ecto::pcl::feature_cloud_variant_t(output);
         return ecto::OK;
       }
-
-      ecto::spore<int> k_;
-      ecto::spore<double> radius_;
-      ecto::spore<int> locator_;
-      ecto::spore<std::string> name_;
-      ecto::spore<bool> vervose_;
-      ecto::spore<ecto::pcl::PointCloud> surface_;
-      ecto::spore<ecto::pcl::FeatureCloud> output_;
     };
 
   }
