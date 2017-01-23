@@ -32,9 +32,10 @@ set(ECTO_PCL_FILES
   io/PCDWriter.cpp
   io/PLYWriter.cpp
   segmentation/ColorizeClusters.cpp
+  segmentation/EuclideanClusterExtraction.cpp
+  segmentation/ExtractIndicesFromLabels.cpp
   segmentation/ExtractPolygonalPrismData.cpp
   segmentation/ExtractLargestCluster.cpp
-  segmentation/EuclideanClusterExtraction.cpp
   segmentation/SACSegmentation.cpp
   segmentation/SACSegmentationFromNormals.cpp
   surface/ConvexHull.cpp

@@ -67,12 +67,26 @@ namespace ecto
       void
       run()
       {
-//        ECTO_SCOPED_CALLPYTHON();
         quit = false;
         viewer_.reset(new PCLVisualizer(window_name));
         viewer_->setBackgroundColor(0, 0, 255);
         viewer_->addCoordinateSystem(0.25);
         viewer_->initCameraParameters();
+
+//        // z-axis as a up vector
+//        viewer_->setCameraPosition(-0.806389, 1.36983, 0.297887, /* position*/
+//                                   0.383674, 0.519189, 0.359116, /* focal point*/
+//                                   -0.0112215, 0.056162, 0.998359 /* view up*/
+//                                   );
+//
+
+        // z-axis as a fordward vector
+        viewer_->setCameraPosition(-0.123668, 0.0368707, -1.18417, /* position*/
+                                   -0.127353, 0.0151198, 0.27976, /* focal point*/
+                                   0.0164321, -0.999755, -0.0148128 /* view up*/
+                                   );
+        viewer_->setCameraClipDistances(0.001, 100);
+
 
         while (!viewer_->wasStopped() && !boost::this_thread::interruption_requested())
         {
@@ -139,6 +153,8 @@ namespace ecto
 //	      static int i = 0;
 //	      ss << std::string("camera_pose_") << (i++);
 //		  viewer->addCoordinateSystem(0.1,pose,ss.str());
+
+          boost::this_thread::sleep(boost::posix_time::milliseconds(30));
 	}
 
         boost::shared_ptr<PCLVisualizer> viewer;
@@ -167,6 +183,7 @@ namespace ecto
         if (quit)
         {
           runner_thread_->join();
+          viewer_->close();
           return ecto::QUIT;
         }
         if (!runner_thread_)
@@ -179,8 +196,15 @@ namespace ecto
         }
 
         {
+          ECTO_SCOPED_CALLPYTHON();
+          boost::this_thread::sleep(boost::posix_time::milliseconds(30));
           boost::mutex::scoped_lock lock(mtx);
+
+          // Prevent to visualize an empty input cloud
           PointCloud cloud = inputs.get<PointCloud>("input");
+          if (!cloud.held)
+            return ecto::OK;
+
           xyz_cloud_variant_t varient = cloud.make_variant();
           show_dispatch dispatch(viewer_, "main cloud");
           boost::shared_ptr<boost::signals2::scoped_connection> c(new boost::signals2::scoped_connection);
@@ -188,7 +212,7 @@ namespace ecto
           jobs_.push_back(c);
         }
 
-        return 0;
+        return ecto::OK;
       }
 
       ~CloudViewer()
@@ -202,8 +226,7 @@ namespace ecto
       std::string window_name;
       boost::shared_ptr<PCLVisualizer> viewer_;
       boost::shared_ptr<boost::thread> runner_thread_;
-      boost::signals2::signal<void
-      (void)> signal_;
+      boost::signals2::signal<void (void)> signal_;
       std::vector<boost::shared_ptr<boost::signals2::scoped_connection> > jobs_;
       boost::mutex mtx;
       bool quit;

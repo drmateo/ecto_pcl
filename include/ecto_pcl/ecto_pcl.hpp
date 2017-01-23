@@ -144,7 +144,9 @@ namespace ecto{
 
     typedef ::pcl::PointIndices Indices;
     typedef ::pcl::ModelCoefficients ModelCoefficients;
-    typedef std::vector< ::pcl::PointIndices > Clusters;
+    typedef std::vector< Indices > Clusters;
+    typedef std::vector< Indices::Ptr > ClustersPtr;
+    typedef std::vector< Indices::ConstPtr >ClustersConstPtr;
 
     enum Format
     {

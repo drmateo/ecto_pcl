@@ -46,7 +46,7 @@ namespace ecto {
       }
 
       static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs) {
-        inputs.declare<Clusters> ("clusters", "Indices of clusters.");
+        inputs.declare<ClustersConstPtr> ("clusters", "Indices of clusters.");
         outputs.declare<PointCloud> ("output", "Colorized clusters as a single cloud.");
       }
 
@@ -125,7 +125,7 @@ namespace ecto {
         {
             ::pcl::PointCloud<Point> cloud;
             // extract indices into a cloud
-            filter.setIndices( ::pcl::PointIndicesPtr( new ::pcl::PointIndices ((*clusters_)[i])) );
+            filter.setIndices( (*clusters_)[i] );
             filter.filter(cloud);
 
             float hue = (360.0 / clusters_->size()) * i;
@@ -154,7 +154,7 @@ namespace ecto {
 
       spore<float> saturation_, value_;
       spore<int> max_clusters_;
-      spore<Clusters> clusters_;
+      spore<ClustersConstPtr> clusters_;
       spore<PointCloud> output_;
     };
 
