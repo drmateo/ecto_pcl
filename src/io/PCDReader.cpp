@@ -53,6 +53,7 @@ namespace ecto {
             outputs.declare<PointCloud>("output", "A point cloud from the pcd file.");
             break;
           case FORMAT_VFHSIGNATURE:
+          case FORMAT_SHOT:
             outputs.declare<FeatureCloud>("output", "A point cloud from the pcd file.");
         }
       }
@@ -70,6 +71,7 @@ namespace ecto {
             cloud_ = outputs["output"];
             break;
           case FORMAT_VFHSIGNATURE:
+          case FORMAT_SHOT:
             feature_ = outputs["output"];
         }
 
@@ -125,6 +127,17 @@ namespace ecto {
             {
               ::pcl::PointCloud< ::pcl::VFHSignature308 >::Ptr cloud (new ::pcl::PointCloud< ::pcl::VFHSignature308 >);
               if ( ::pcl::io::loadPCDFile< ::pcl::VFHSignature308 > (*filename_, *cloud) == -1)
+              {
+                throw std::runtime_error("PCDReader: failed to read PointXYZRGBL cloud.");
+                return 1;
+              }
+              FeatureCloud p( cloud );
+              *feature_ = p;
+            } break;
+          case FORMAT_SHOT:
+            {
+              ::pcl::PointCloud< ::pcl::SHOT352 >::Ptr cloud (new ::pcl::PointCloud< ::pcl::SHOT352 >);
+              if ( ::pcl::io::loadPCDFile< ::pcl::SHOT352 > (*filename_, *cloud) == -1)
               {
                 throw std::runtime_error("PCDReader: failed to read PointXYZRGBL cloud.");
                 return 1;
