@@ -28,11 +28,11 @@
  */
 
 #include <pcl/features/vfh.h>
-#include "FeatureEstimator.hpp"
+#include "VFHEstimation.hpp"
 
 namespace ecto {
   namespace pcl {
-    typedef ecto::pcl::Estimation< ::pcl::VFHSignature308, ::pcl::VFHEstimation > VFHEstimation;
+    typedef ecto::pcl::VFHEstimationImpl<> VFHEstimation;
   }
 }
 

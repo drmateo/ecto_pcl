@@ -8,13 +8,13 @@
 #ifndef SRC_FEATURES_CVFHESTIMATION_HPP_
 #define SRC_FEATURES_CVFHESTIMATION_HPP_
 
-#include "FeatureEstimator.hpp"
+#include "VFHEstimation.hpp"
 #include <pcl/features/cvfh.h>
 
 namespace ecto {
   namespace pcl {
     template <typename PointT = ::pcl::VFHSignature308, template <class A, class B, class C > class EstimatorT = ::pcl::CVFHEstimation>
-    struct CVFHEstimationImpl :  Estimation<PointT, EstimatorT>
+    struct CVFHEstimationImpl :  VFHEstimationImpl<PointT, EstimatorT>
     {
       using Estimation<PointT, EstimatorT>::k_;
       using Estimation<PointT, EstimatorT>::radius_;
@@ -23,13 +23,13 @@ namespace ecto {
       using Estimation<PointT, EstimatorT>::vervose_;
       using Estimation<PointT, EstimatorT>::surface_;
       using Estimation<PointT, EstimatorT>::output_;
+      using VFHEstimationImpl<PointT, EstimatorT>::vp_x_;
+      using VFHEstimationImpl<PointT, EstimatorT>::vp_y_;
+      using VFHEstimationImpl<PointT, EstimatorT>::vp_z_;
 
       static void declare_params(ecto::tendrils& params)
       {
-        Estimation<PointT, EstimatorT>::declare_params(params);
-        params.declare<float> ("vp_x", "Viewpoint x component.", 0.f);
-        params.declare<float> ("vp_y", "Viewpoint y component.", 0.f);
-        params.declare<float> ("vp_z", "Viewpoint z component.", 0.f);
+        VFHEstimationImpl<PointT, EstimatorT>::declare_params(params);
         params.declare<float> ("radius_normals", "The radius used to compute normals.", 0.005f * 3); // 3 times the leaf size
         params.declare<float> ("cluster_tolerance", "The maxim euclidean distance bt points to be added to the cluster.", 0.005f * 3); // 3 times the leaf size
         params.declare<float> ("angl_thr", "The deviation of the normlas between two points to be considered the same cluster.", 0.125f); // in rad.
@@ -40,8 +40,7 @@ namespace ecto {
 
       void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        Estimation<PointT, EstimatorT>::configure(params, inputs, outputs);
-        vp_x_ = params["vp_x"], vp_y_ = params["vp_x"], vp_z_ = params["vp_x"];
+        VFHEstimationImpl<PointT, EstimatorT>::configure(params, inputs, outputs);
         radius_normals_ = params["radius_normals"];
         cluster_tolerance_ = params["cluster_tolerance"];
         angl_thr_ = params["angl_thr"];
@@ -58,7 +57,11 @@ namespace ecto {
         EstimatorT<Point, ::pcl::Normal, PointT> impl;
         typename ::pcl::PointCloud<PointT>::Ptr output(new typename ::pcl::PointCloud<PointT>);
 
-        impl.setViewPoint(*vp_x_, *vp_y_, *vp_z_);
+        if (*vp_x_ != 0.0 || *vp_y_ != 0.0 || *vp_z_ != 0.0)
+             impl.setViewPoint(*vp_x_,*vp_y_,*vp_z_);
+           else
+             impl.setViewPoint(input->sensor_origin_ [0],input->sensor_origin_ [1],input->sensor_origin_ [2]);
+
         impl.setRadiusNormals(*radius_normals_);
         impl.setClusterTolerance(*cluster_tolerance_);
         impl.setEPSAngleThreshold(*angl_thr_);
@@ -88,7 +91,6 @@ namespace ecto {
         return ecto::OK;
       }
 
-      spore<float> vp_x_, vp_y_, vp_z_;
       spore<float> radius_normals_;
       spore<float> cluster_tolerance_;
       spore<float> angl_thr_;

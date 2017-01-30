@@ -42,9 +42,9 @@ namespace ecto {
       using Estimation<PointT, EstimatorT>::vervose_;
       using Estimation<PointT, EstimatorT>::surface_;
       using Estimation<PointT, EstimatorT>::output_;
-      using CVFHEstimationImpl<PointT, EstimatorT>::vp_x_;
-      using CVFHEstimationImpl<PointT, EstimatorT>::vp_y_;
-      using CVFHEstimationImpl<PointT, EstimatorT>::vp_z_;
+      using VFHEstimationImpl<PointT, EstimatorT>::vp_x_;
+      using VFHEstimationImpl<PointT, EstimatorT>::vp_y_;
+      using VFHEstimationImpl<PointT, EstimatorT>::vp_z_;
       using CVFHEstimationImpl<PointT, EstimatorT>::radius_normals_;
       using CVFHEstimationImpl<PointT, EstimatorT>::cluster_tolerance_;
       using CVFHEstimationImpl<PointT, EstimatorT>::angl_thr_;
@@ -76,7 +76,11 @@ namespace ecto {
         EstimatorT<Point, ::pcl::Normal, PointT> impl;
         typename ::pcl::PointCloud<PointT>::Ptr output(new typename ::pcl::PointCloud<PointT>);
 
-        impl.setViewPoint(*vp_x_, *vp_y_, *vp_z_);
+        if (*vp_x_ != 0.0 || *vp_y_ != 0.0 || *vp_z_ != 0.0)
+             impl.setViewPoint(*vp_x_,*vp_y_,*vp_z_);
+           else
+             impl.setViewPoint(input->sensor_origin_ [0],input->sensor_origin_ [1],input->sensor_origin_ [2]);
+
         impl.setRadiusNormals(*radius_normals_);
         impl.setClusterTolerance(*cluster_tolerance_);
         impl.setEPSAngleThreshold(*angl_thr_);

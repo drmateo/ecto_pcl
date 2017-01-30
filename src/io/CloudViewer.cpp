@@ -34,6 +34,9 @@
 #include <boost/variant/get.hpp>
 #include <sstream>
 
+#include <X11/Xlib.h>
+
+
 namespace ecto
 {
   namespace pcl
@@ -45,6 +48,7 @@ namespace ecto
           :
             quit(false)
       {
+        XInitThreads();
       }
 
       static void
@@ -196,20 +200,23 @@ namespace ecto
         }
 
         {
-          ECTO_SCOPED_CALLPYTHON();
           boost::this_thread::sleep(boost::posix_time::milliseconds(30));
-          boost::mutex::scoped_lock lock(mtx);
+          boost::mutex::scoped_try_lock lock(mtx);
+          if (lock)
+          {
+            ECTO_SCOPED_CALLPYTHON();
 
-          // Prevent to visualize an empty input cloud
-          PointCloud cloud = inputs.get<PointCloud>("input");
-          if (!cloud.held)
-            return ecto::OK;
+            // Prevent to visualize an empty input cloud
+            PointCloud cloud = inputs.get<PointCloud>("input");
+            if (!cloud.held)
+              return ecto::OK;
 
-          xyz_cloud_variant_t varient = cloud.make_variant();
-          show_dispatch dispatch(viewer_, "main cloud");
-          boost::shared_ptr<boost::signals2::scoped_connection> c(new boost::signals2::scoped_connection);
-          *c = signal_.connect(show_dispatch_runner(dispatch, varient));
-          jobs_.push_back(c);
+            xyz_cloud_variant_t varient = cloud.make_variant();
+            show_dispatch dispatch(viewer_, "main cloud");
+            boost::shared_ptr<boost::signals2::scoped_connection> c(new boost::signals2::scoped_connection);
+            *c = signal_.connect(show_dispatch_runner(dispatch, varient));
+            jobs_.push_back(c);
+          }
         }
 
         return ecto::OK;

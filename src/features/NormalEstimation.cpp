@@ -71,6 +71,11 @@ namespace ecto {
         ::pcl::NormalEstimation<Point, ::pcl::Normal> impl;
         typename ::pcl::PointCloud< ::pcl::Normal >::Ptr normals(new typename ::pcl::PointCloud< ::pcl::Normal >);
 
+        if (*vp_x_ != 0.0 || *vp_y_ != 0.0 || *vp_z_ != 0.0)
+          impl.setViewPoint(*vp_x_,*vp_y_,*vp_z_);
+        else
+          impl.setViewPoint(input->sensor_origin_ [0],input->sensor_origin_ [1],input->sensor_origin_ [2]);
+
         impl.setKSearch(*k_);
         impl.setRadiusSearch(*radius_);
         typename ::pcl::search::Search<Point>::Ptr tree_;
@@ -89,7 +94,6 @@ namespace ecto {
         }
         impl.setSearchMethod(tree_);
         impl.setInputCloud(input);
-        impl.setViewPoint(*vp_x_,*vp_y_,*vp_z_);
         impl.compute(*normals);
         normals->header = input->header;
         *output_ = ecto::pcl::feature_cloud_variant_t(normals);
