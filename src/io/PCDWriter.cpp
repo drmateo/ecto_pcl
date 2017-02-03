@@ -86,6 +86,9 @@ namespace ecto {
         template <typename CloudType>
         void operator()(CloudType& cloud) const
         {
+        	if (cloud->size() == 0)
+        	  return;
+
           if(binary)
           {
             try
