@@ -35,6 +35,20 @@
 namespace ecto {
   namespace pcl {
 
+    template<typename PointT> int
+    loadPCD(spore<std::string> file_buffer, typename ::pcl::PointCloud<PointT>::Ptr& cloud, spore<bool> buffer)
+    {
+      // Read PCD from buffer string
+      if (*buffer)
+      {
+        std::istringstream buffer_ss (*file_buffer);
+        return ::pcl::io::loadPCDBuffer< PointT > (buffer_ss, *cloud);
+      }
+
+      // Read PCD from file
+      return ::pcl::io::loadPCDFile< PointT > (*file_buffer, *cloud);
+    }
+
     struct PCDReader
     {
       static void declare_params(tendrils& params)
@@ -42,6 +56,9 @@ namespace ecto {
         params.declare<ecto::pcl::Format>("format", "Format of cloud found in PCD file.",
                                            ecto::pcl::FORMAT_XYZRGB);
         params.declare<std::string> ("filename", "Name of the pcd file", "");
+        params.declare<bool>("buffer",
+                             "Define if the PCD has to be read from buffer string, in case that case filename is handle has a buffer",
+                             false);
       }
 
       static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -61,7 +78,7 @@ namespace ecto {
         }
       }
 
-      PCDReader() { first = true; }
+      PCDReader() {}
       void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
         format_ = params["format"];
@@ -81,13 +98,12 @@ namespace ecto {
         }
 
         filename_ = params["filename"];
+
+        buffer_ = params["buffer"];
       }
 
       int process(const tendrils& /*inputs*/, const tendrils& outputs)
       {
-        if (!first)
-          return OK;
-        first = false;
         switch(*format_)
         {
           // Point Cloud cases
@@ -95,7 +111,7 @@ namespace ecto {
             {
               std::cout << "opening " << *filename_ << std::endl;
               ::pcl::PointCloud< ::pcl::PointXYZ >::Ptr cloud (new ::pcl::PointCloud< ::pcl::PointXYZ >);
-              if ( ::pcl::io::loadPCDFile< ::pcl::PointXYZ >(*filename_, *cloud) == -1)
+              if ( loadPCD< ::pcl::PointXYZ >(filename_, cloud, buffer_) == -1)
               {
                 throw std::runtime_error("PCDReader: failed to read PointXYZ cloud.");
                 return 1;
@@ -107,7 +123,7 @@ namespace ecto {
           case FORMAT_XYZRGB:
             {
               ::pcl::PointCloud< ::pcl::PointXYZRGB >::Ptr cloud (new ::pcl::PointCloud< ::pcl::PointXYZRGB >);
-              if ( ::pcl::io::loadPCDFile< ::pcl::PointXYZRGB > (*filename_, *cloud) == -1)
+              if ( loadPCD< ::pcl::PointXYZRGB > (filename_, cloud, buffer_) == -1)
               {
                 throw std::runtime_error("PCDReader: failed to read PointXYZRGB cloud.");
                 return 1;
@@ -118,7 +134,7 @@ namespace ecto {
           case FORMAT_XYZRGBL:
             {
               ::pcl::PointCloud< ::pcl::PointXYZRGBL >::Ptr cloud (new ::pcl::PointCloud< ::pcl::PointXYZRGBL >);
-              if ( ::pcl::io::loadPCDFile< ::pcl::PointXYZRGBL > (*filename_, *cloud) == -1)
+              if ( loadPCD< ::pcl::PointXYZRGBL > (filename_, cloud, buffer_) == -1)
               {
                 throw std::runtime_error("PCDReader: failed to read PointXYZRGBL cloud.");
                 return 1;
@@ -131,7 +147,7 @@ namespace ecto {
           case FORMAT_PFHSIGNATURE:
             {
               ::pcl::PointCloud< ::pcl::PFHSignature125 >::Ptr cloud (new ::pcl::PointCloud< ::pcl::PFHSignature125 >);
-              if ( ::pcl::io::loadPCDFile< ::pcl::PFHSignature125 > (*filename_, *cloud) == -1)
+              if ( loadPCD< ::pcl::PFHSignature125 > (filename_, cloud, buffer_) == -1)
               {
                 throw std::runtime_error("PCDReader: failed to read PFHSignature125 cloud.");
                 return 1;
@@ -142,7 +158,7 @@ namespace ecto {
           case FORMAT_FPFHSIGNATURE:
             {
               ::pcl::PointCloud< ::pcl::FPFHSignature33 >::Ptr cloud (new ::pcl::PointCloud< ::pcl::FPFHSignature33 >);
-              if ( ::pcl::io::loadPCDFile< ::pcl::FPFHSignature33 > (*filename_, *cloud) == -1)
+              if ( loadPCD< ::pcl::FPFHSignature33 > (filename_, cloud, buffer_) == -1)
               {
                 throw std::runtime_error("PCDReader: failed to read FPFHSignature33 cloud.");
                 return 1;
@@ -153,7 +169,7 @@ namespace ecto {
           case FORMAT_VFHSIGNATURE:
             {
               ::pcl::PointCloud< ::pcl::VFHSignature308 >::Ptr cloud (new ::pcl::PointCloud< ::pcl::VFHSignature308 >);
-              if ( ::pcl::io::loadPCDFile< ::pcl::VFHSignature308 > (*filename_, *cloud) == -1)
+              if ( loadPCD< ::pcl::VFHSignature308 > (filename_, cloud, buffer_) == -1)
               {
                 throw std::runtime_error("PCDReader: failed to read VFHSignature308 cloud.");
                 return 1;
@@ -164,7 +180,7 @@ namespace ecto {
           case FORMAT_SHOT:
             {
               ::pcl::PointCloud< ::pcl::SHOT352 >::Ptr cloud (new ::pcl::PointCloud< ::pcl::SHOT352 >);
-              if ( ::pcl::io::loadPCDFile< ::pcl::SHOT352 > (*filename_, *cloud) == -1)
+              if ( loadPCD< ::pcl::SHOT352 > (filename_, cloud, buffer_) == -1)
               {
                 throw std::runtime_error("PCDReader: failed to read SHOT352 cloud.");
                 return 1;
@@ -180,12 +196,11 @@ namespace ecto {
         return OK;
       }
 
-      bool first;
       spore<PointCloud> cloud_;
       spore<FeatureCloud> feature_;
       spore<ecto::pcl::Format> format_;
       spore<std::string> filename_;
-
+      spore<bool> buffer_;
     };
 
   }
