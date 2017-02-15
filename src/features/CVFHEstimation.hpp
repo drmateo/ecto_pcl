@@ -20,7 +20,7 @@ namespace ecto {
       using Estimation<PointT, EstimatorT>::radius_;
       using Estimation<PointT, EstimatorT>::locator_;
       using Estimation<PointT, EstimatorT>::name_;
-      using Estimation<PointT, EstimatorT>::vervose_;
+      using Estimation<PointT, EstimatorT>::verbose_;
       using Estimation<PointT, EstimatorT>::surface_;
       using Estimation<PointT, EstimatorT>::output_;
       using VFHEstimationImpl<PointT, EstimatorT>::vp_x_;
@@ -83,7 +83,7 @@ namespace ecto {
         ::pcl::console::TicToc timer;
         timer.tic();
         impl.compute(*output);
-        if (*vervose_)
+        if (*verbose_)
           std::cout << *name_ << " took " << timer.toc() << "ms. for a cloud with " << input->size() << " points" << std::endl;
 
         output->header = input->header;

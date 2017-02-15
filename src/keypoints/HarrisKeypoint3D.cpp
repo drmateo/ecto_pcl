@@ -46,7 +46,7 @@ namespace ecto {
         params.declare<bool> ("non_max_suppression", "Whether non maxima suppression should be applied or the response for each point should be returned.", false);
         params.declare<bool> ("do_refine", "Whether the detected key points should be refined or not.", true);
         params.declare<int> ("spatial_locator", "The search method to use: FLANN(0), ORGANIZED(1).", 0);
-        params.declare<bool> ("vervose", "Output information about the computation.", false);
+        params.declare<bool> ("verbose", "Output information about the computation.", false);
       }
 
       static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -62,7 +62,7 @@ namespace ecto {
         non_max_suppression_ = params["non_max_suppression"];
         do_refine_ = params["do_refine"];
         locator_ = params["spatial_locator"];
-        vervose_ = params["vervose"];
+        verbose_ = params["verbose"];
         output_ = outputs["output"];
       }
 
@@ -130,7 +130,7 @@ namespace ecto {
         ::pcl::console::TicToc timer;
         timer.tic();
         impl.compute(*keypoints);
-        if (*vervose_)
+        if (*verbose_)
           std::cout << "HarrisKeypoint3D" << " took " << timer.toc() << "ms. for a cloud with " << input->size() << " points" << std::endl;
 
         keypoints->header = input->header;
@@ -144,7 +144,7 @@ namespace ecto {
       ecto::spore<float> threshold_, radius_;
       ecto::spore<bool> non_max_suppression_, do_refine_;
       ecto::spore<int> locator_;
-      ecto::spore<bool> vervose_;
+      ecto::spore<bool> verbose_;
       ecto::spore<ecto::pcl::PointCloud> output_;
     };
 

@@ -18,7 +18,7 @@ namespace ecto {
       static void declare_params(ecto::tendrils& params)
       {
         params.declare<float> ("radius", "The radius for normal estimation and non maxima suppression.", 0.01f);
-        params.declare<bool> ("vervose", "Output information about the computation.", false);
+        params.declare<bool> ("verbose", "Output information about the computation.", false);
       }
 
       static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -29,7 +29,7 @@ namespace ecto {
       void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
         radius_ = params["radius"];
-        vervose_ = params["vervose"];
+        verbose_ = params["verbose"];
         output_ = outputs["output"];
       }
 
@@ -45,7 +45,7 @@ namespace ecto {
         ::pcl::console::TicToc timer;
         timer.tic();
         impl.filter(*keypoints);
-        if (*vervose_)
+        if (*verbose_)
           std::cout << "UniformSampling" << " took " << timer.toc() << "ms. for a cloud with " << input->size() << " points" << std::endl;
 
         keypoints->header = input->header;
@@ -56,7 +56,7 @@ namespace ecto {
       }
 
       ecto::spore<float> radius_;
-      ecto::spore<bool> vervose_;
+      ecto::spore<bool> verbose_;
       ecto::spore<ecto::pcl::PointCloud> output_;
     };
 

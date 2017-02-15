@@ -46,7 +46,7 @@ namespace ecto {
         params.declare<double> ("radius_search", "The sphere radius to use for determining the nearest neighbors used for feature estimation.", 0);
         params.declare<int> ("spatial_locator", "The search method to use: FLANN(0), ORGANIZED(1).",0);
         params.declare<std::string> ("name", "Feature name.", "feature");
-        params.declare<bool> ("vervose", "Output information about the computation.", false);
+        params.declare<bool> ("verbose", "Output information about the computation.", false);
       }
 
       static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -61,7 +61,7 @@ namespace ecto {
         radius_ = params["radius_search"];
         locator_ = params["spatial_locator"];
         name_ = params["name"];
-        vervose_ = params["vervose"];
+        verbose_ = params["verbose"];
         surface_ = inputs["surface"];
         output_ = outputs["output"];
       }
@@ -78,7 +78,7 @@ namespace ecto {
       ecto::spore<double> radius_;
       ecto::spore<int> locator_;
       ecto::spore<std::string> name_;
-      ecto::spore<bool> vervose_;
+      ecto::spore<bool> verbose_;
       ecto::spore<ecto::pcl::PointCloud> surface_;
       ecto::spore<ecto::pcl::FeatureCloud> output_;
     };
@@ -111,7 +111,7 @@ namespace ecto {
         ::pcl::console::TicToc timer;
         timer.tic();
         impl.compute(*output);
-        if (*vervose_)
+        if (*verbose_)
           std::cout << *name_ << " took " << timer.toc() << "ms. for a cloud with " << input->size() << " points" << std::endl;
 
         output->header = input->header;
@@ -151,7 +151,7 @@ namespace ecto {
         ::pcl::console::TicToc timer;
         timer.tic();
         impl.compute(*output);
-        if (*vervose_)
+        if (*verbose_)
           std::cout << *name_ << " took " << timer.toc() << "ms. for a cloud with " << input->size() << " points" << std::endl;
 
         output->header = input->header;
