@@ -32,10 +32,11 @@
 #include <pcl/visualization/pcl_visualizer.h>
 
 #include <boost/variant/get.hpp>
-#include <sstream>
 
 #include <X11/Xlib.h>
 
+#include <sstream>
+#include <map>
 
 namespace ecto
 {
@@ -44,9 +45,15 @@ namespace ecto
     using ::pcl::visualization::PCLVisualizer;
     struct CloudViewer
     {
+      // A map to store properties for visualize:
+      //           * First key is aimed to refer to the cloud
+      //           * Second key is aimed to refer to the property
+      //           * value
+      typedef std::map<std::string,std::map<int, std::vector<int> > > Properties;
+
       CloudViewer()
-          :
-            quit(false)
+      : quit(false)
+      , num_inputs(1)
       {
         XInitThreads();
       }
@@ -55,18 +62,31 @@ namespace ecto
       declare_params(tendrils& params)
       {
         params.declare<std::string>("window_name", "The window name", "cloud viewer");
+        params.declare<int>("num_inputs", "Numb of input clouds to visualize", 1);
+        params.declare<Properties>("Properties", "", Properties());
       }
 
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare<PointCloud>("input", "The cloud to view");
+        int n_i = 1;
+        params["num_inputs"] >> n_i;
+        for (int i=1; i <= n_i; i++)
+        {
+          std::stringstream ss;
+          ss << "input" << i;
+          inputs.declare<PointCloud>(ss.str(), "The cloud to view");
+        }
       }
 
       void
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
         params["window_name"] >> window_name;
+        params["num_inputs"] >> num_inputs;
+        params["properties"] >> viz_prop;
+
+        std::cout << viz_prop["input2"][4][0] << std::endl;
       }
       void
       run()
@@ -129,10 +149,21 @@ namespace ecto
         void
         operator()(boost::shared_ptr<const CloudPOINTXYZRGB>& cloud) const
         {
-          ::pcl::visualization::PointCloudColorHandlerRGBField<CloudPOINTXYZRGB::PointType> rgb(cloud);
-          if (!viewer->updatePointCloud(cloud, rgb, key))
+          if (key == "input2")
           {
-            viewer->addPointCloud(cloud, rgb, key);
+            ::pcl::visualization::PointCloudColorHandlerCustom<CloudPOINTXYZRGB::PointType> rgb(cloud, 100,0,0);
+             if (!viewer->updatePointCloud(cloud, rgb, key))
+             {
+               viewer->addPointCloud(cloud, rgb, key);
+             }
+          }
+          else
+          {
+            ::pcl::visualization::PointCloudColorHandlerRGBField<CloudPOINTXYZRGB::PointType> rgb(cloud);
+            if (!viewer->updatePointCloud(cloud, rgb, key))
+            {
+              viewer->addPointCloud(cloud, rgb, key);
+            }
           }
         }
         void
@@ -147,16 +178,6 @@ namespace ecto
             viewer->addPointCloud(cloud, rgb, key);
           }
 //          viewer->updatePointCloud(cloud,normals,key);
-
-//          Eigen::Affine3f pose = Eigen::Affine3f::Identity();
-//          Eigen::Matrix3f r = (*cloud).sensor_orientation_.matrix();
-//          Eigen::Vector3f t = Eigen::Vector3f((*cloud).sensor_origin_.x(), (*cloud).sensor_origin_.y(), (*cloud).sensor_origin_.z());
-//          pose.rotate(r);
-//	      pose.pretranslate(t);
-//	      std::stringstream ss;
-//	      static int i = 0;
-//	      ss << std::string("camera_pose_") << (i++);
-//		  viewer->addCoordinateSystem(0.1,pose,ss.str());
 
           boost::this_thread::sleep(boost::posix_time::milliseconds(30));
 	}
@@ -206,20 +227,32 @@ namespace ecto
           {
             ECTO_SCOPED_CALLPYTHON();
 
-            // Prevent to visualize an empty input cloud
-            PointCloud cloud = inputs.get<PointCloud>("input");
-            if (!cloud.held)
-              return ecto::OK;
+            for (int i=1; i <= num_inputs; i++)
+            {
+              std::stringstream ss;
+              ss << "input" << i;
 
-            xyz_cloud_variant_t varient = cloud.make_variant();
-            show_dispatch dispatch(viewer_, "main cloud");
-            boost::shared_ptr<boost::signals2::scoped_connection> c(new boost::signals2::scoped_connection);
-            *c = signal_.connect(show_dispatch_runner(dispatch, varient));
-            jobs_.push_back(c);
+              // Prevent to visualize an empty input cloud
+              PointCloud cloud = inputs.get<PointCloud>(ss.str());
+              if (!cloud.held)
+                return ecto::OK;
+
+              xyz_cloud_variant_t varient = cloud.make_variant();
+              show_dispatch dispatch(viewer_, ss.str());
+              boost::shared_ptr<boost::signals2::scoped_connection> c(new boost::signals2::scoped_connection);
+              *c = signal_.connect(show_dispatch_runner(dispatch, varient));
+              jobs_.push_back(c);
+            }
           }
         }
 
         return ecto::OK;
+      }
+
+      void
+      parse_properties()
+      {
+
       }
 
       ~CloudViewer()
@@ -230,6 +263,9 @@ namespace ecto
           runner_thread_->join();
         }
       }
+
+      Properties viz_prop;
+      int num_inputs;
       std::string window_name;
       boost::shared_ptr<PCLVisualizer> viewer_;
       boost::shared_ptr<boost::thread> runner_thread_;
