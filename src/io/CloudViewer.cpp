@@ -63,7 +63,7 @@ namespace ecto
       {
         params.declare<std::string>("window_name", "The window name", "cloud viewer");
         params.declare<int>("num_inputs", "Numb of input clouds to visualize", 1);
-//        params.declare<Properties>("properties", "", Properties());
+        params.declare<Properties>("properties", "");
       }
 
       static void
@@ -84,7 +84,7 @@ namespace ecto
       {
         params["window_name"] >> window_name;
         params["num_inputs"] >> num_inputs;
-//        params["properties"] >> viz_prop;
+        params["properties"] >> viz_prop;
 
 //        std::cout << viz_prop["input2"][4][0] << std::endl;
       }
