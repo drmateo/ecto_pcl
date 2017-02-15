@@ -115,6 +115,8 @@ namespace ecto {
           std::cout << *name_ << " took " << timer.toc() << "ms. for a cloud with " << input->size() << " points" << std::endl;
 
         output->header = input->header;
+        output->sensor_origin_ = input->sensor_origin_;
+        output->sensor_orientation_ = input->sensor_orientation_;
         *output_ = ecto::pcl::feature_cloud_variant_t(output);
         return ecto::OK;
       }
@@ -153,6 +155,8 @@ namespace ecto {
           std::cout << *name_ << " took " << timer.toc() << "ms. for a cloud with " << input->size() << " points" << std::endl;
 
         output->header = input->header;
+        output->sensor_origin_ = input->sensor_origin_;
+        output->sensor_orientation_ = input->sensor_orientation_;
         *output_ = ecto::pcl::feature_cloud_variant_t(output);
         return ecto::OK;
       }

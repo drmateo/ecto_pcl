@@ -60,6 +60,8 @@ namespace ecto {
       {
         typename ::pcl::PointCloud<Point>::Ptr cloud(new typename ::pcl::PointCloud<Point>);
         cloud->header = input->header;
+        cloud->sensor_origin_ = input->sensor_origin_;
+        cloud->sensor_orientation_ = input->sensor_orientation_;
 
         if (!input->empty())
         {

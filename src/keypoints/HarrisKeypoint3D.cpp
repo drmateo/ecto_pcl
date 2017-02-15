@@ -134,6 +134,8 @@ namespace ecto {
           std::cout << "HarrisKeypoint3D" << " took " << timer.toc() << "ms. for a cloud with " << input->size() << " points" << std::endl;
 
         keypoints->header = input->header;
+        keypoints->sensor_origin_ = input->sensor_origin_;
+        keypoints->sensor_orientation_ = input->sensor_orientation_;
         *output_ = ecto::pcl::xyz_cloud_variant_t(keypoints);
         return ecto::OK;
       }

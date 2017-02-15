@@ -47,7 +47,6 @@ namespace ecto {
 
       void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-
         output_ = outputs["output"];
       }
 
@@ -64,6 +63,8 @@ namespace ecto {
           std::vector<int> indices;
           ::pcl::removeNaNFromPointCloud<Point>(*input, *cloud, indices);
           cloud->header = input->header;
+          cloud->sensor_origin_ = input->sensor_origin_;
+          cloud->sensor_orientation_ = input->sensor_orientation_;
           cloud->is_dense = true;
         }
 

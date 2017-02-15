@@ -96,6 +96,8 @@ namespace ecto {
         impl.setInputCloud(input);
         impl.compute(*normals);
         normals->header = input->header;
+        normals->sensor_origin_ = input->sensor_origin_;
+        normals->sensor_orientation_ = input->sensor_orientation_;
         *output_ = ecto::pcl::feature_cloud_variant_t(normals);
         return ecto::OK;
       }
