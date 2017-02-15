@@ -1,6 +1,7 @@
 set(ECTO_PCL_FILES
   ecto_pcl.cpp
   keypoints/HarrisKeypoint3D.cpp
+  keypoints/UniformSampling.cpp
   features/CVFHEstimation.cpp
   features/ESFEstimation.cpp
   features/FPFHEstimation.cpp
