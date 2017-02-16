@@ -38,6 +38,18 @@
 #include <sstream>
 #include <map>
 
+
+//PCL_VISUALIZER_POINT_SIZE
+//PCL_VISUALIZER_OPACITY
+//PCL_VISUALIZER_LINE_WIDTH
+//PCL_VISUALIZER_FONT_SIZE
+//PCL_VISUALIZER_COLOR  (3 values 0.0 --> 1.0)
+//PCL_VISUALIZER_REPRESENTATION
+//PCL_VISUALIZER_IMMEDIATE_RENDERING
+//PCL_VISUALIZER_SHADING
+//PCL_VISUALIZER_LUT
+//PCL_VISUALIZER_LUT_RANGE
+
 namespace ecto
 {
   namespace pcl
@@ -49,7 +61,8 @@ namespace ecto
       //           * First key is aimed to refer to the cloud
       //           * Second key is aimed to refer to the property
       //           * value
-      typedef std::map<std::string,std::map<int, std::vector<int> > > Properties;
+      typedef std::map<int, std::vector<double> > Property;
+      typedef std::map<std::string, Property > Properties;
 
       CloudViewer()
       : quit(false)
@@ -61,9 +74,11 @@ namespace ecto
       static void
       declare_params(tendrils& params)
       {
+        std::vector<int> bc_def; bc_def.push_back(0), bc_def.push_back(0), bc_def.push_back(255);
         params.declare<std::string>("window_name", "The window name", "cloud viewer");
         params.declare<int>("num_inputs", "Numb of input clouds to visualize", 1);
         params.declare<Properties>("properties", "");
+        params.declare<std::vector<int> >("bc", "Background color", bc_def);
       }
 
       static void
@@ -85,31 +100,32 @@ namespace ecto
         params["window_name"] >> window_name;
         params["num_inputs"] >> num_inputs;
         params["properties"] >> viz_prop;
-
-//        std::cout << viz_prop["input2"][4][0] << std::endl;
+        params["bc"] >> bc;
       }
       void
       run()
       {
         quit = false;
         viewer_.reset(new PCLVisualizer(window_name));
-        viewer_->setBackgroundColor(0, 0, 255);
-        viewer_->addCoordinateSystem(0.25);
+        viewer_->setBackgroundColor(bc[0], bc[1], bc[2]);
         viewer_->initCameraParameters();
 
+        {
+          // TODO: Expose this
+        viewer_->addCoordinateSystem(0.25);
 //        // z-axis as a up vector
 //        viewer_->setCameraPosition(-0.806389, 1.36983, 0.297887, /* position*/
 //                                   0.383674, 0.519189, 0.359116, /* focal point*/
 //                                   -0.0112215, 0.056162, 0.998359 /* view up*/
 //                                   );
 //
-
         // z-axis as a fordward vector
         viewer_->setCameraPosition(-0.123668, 0.0368707, -1.18417, /* position*/
                                    -0.127353, 0.0151198, 0.27976, /* focal point*/
                                    0.0164321, -0.999755, -0.0148128 /* view up*/
                                    );
         viewer_->setCameraClipDistances(0.001, 100);
+        }
 
         while (!viewer_->wasStopped() && !boost::this_thread::interruption_requested())
         {
@@ -128,10 +144,11 @@ namespace ecto
 
       struct show_dispatch: boost::static_visitor<>
       {
-        show_dispatch(boost::shared_ptr<PCLVisualizer> viewer, const std::string& key)
-            :
-              viewer(viewer),
-              key(key)
+        show_dispatch(boost::shared_ptr<PCLVisualizer> viewer, const std::string& key, const Property& prop)
+            : viewer(viewer)
+            , key(key)
+            , prop(prop)
+
         {
         }
 
@@ -148,21 +165,18 @@ namespace ecto
         void
         operator()(boost::shared_ptr<const CloudPOINTXYZRGB>& cloud) const
         {
-          if (key == "input2")
+          ::pcl::visualization::PointCloudColorHandlerRGBField<CloudPOINTXYZRGB::PointType> rgb(cloud);
+          if (!viewer->updatePointCloud(cloud, rgb, key))
           {
-            ::pcl::visualization::PointCloudColorHandlerCustom<CloudPOINTXYZRGB::PointType> rgb(cloud, 100,0,0);
-             if (!viewer->updatePointCloud(cloud, rgb, key))
-             {
-               viewer->addPointCloud(cloud, rgb, key);
-             }
+            viewer->addPointCloud(cloud, rgb, key);
           }
-          else
+          // Set PointCloud properties to render
+          for (std::map<int, std::vector<double> >::const_iterator it=prop.begin(); it!=prop.end(); ++it)
           {
-            ::pcl::visualization::PointCloudColorHandlerRGBField<CloudPOINTXYZRGB::PointType> rgb(cloud);
-            if (!viewer->updatePointCloud(cloud, rgb, key))
-            {
-              viewer->addPointCloud(cloud, rgb, key);
-            }
+            if (it->second.size() > 1)
+              viewer->setPointCloudRenderingProperties (it->first, it->second[0], it->second[1], it->second[2], key);
+            else
+              viewer->setPointCloudRenderingProperties (it->first, it->second[0], key);
           }
         }
         void
@@ -183,6 +197,7 @@ namespace ecto
 
         boost::shared_ptr<PCLVisualizer> viewer;
         std::string key;
+        Property prop;
       };
       struct show_dispatch_runner
       {
@@ -228,16 +243,16 @@ namespace ecto
 
             for (int i=1; i <= num_inputs; i++)
             {
-              std::stringstream ss;
-              ss << "input" << i;
+              std::stringstream key;
+              key << "input" << i;
 
               // Prevent to visualize an empty input cloud
-              PointCloud cloud = inputs.get<PointCloud>(ss.str());
+              PointCloud cloud = inputs.get<PointCloud>(key.str());
               if (!cloud.held)
                 return ecto::OK;
 
               xyz_cloud_variant_t varient = cloud.make_variant();
-              show_dispatch dispatch(viewer_, ss.str());
+              show_dispatch dispatch(viewer_, key.str(), viz_prop[key.str()]);
               boost::shared_ptr<boost::signals2::scoped_connection> c(new boost::signals2::scoped_connection);
               *c = signal_.connect(show_dispatch_runner(dispatch, varient));
               jobs_.push_back(c);
@@ -264,6 +279,7 @@ namespace ecto
       }
 
       Properties viz_prop;
+      std::vector<int> bc;
       int num_inputs;
       std::string window_name;
       boost::shared_ptr<PCLVisualizer> viewer_;

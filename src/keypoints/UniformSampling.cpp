@@ -24,6 +24,7 @@ namespace ecto {
       static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
         outputs.declare<ecto::pcl::PointCloud> ("output", "Cloud of features.");
+        outputs.declare<double> ("tictoc", "Process performance", std::numeric_limits<double>::max()).required(false);
       }
 
       void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
@@ -31,6 +32,7 @@ namespace ecto {
         radius_ = params["radius"];
         verbose_ = params["verbose"];
         output_ = outputs["output"];
+        tictoc_ = outputs["tictoc"];
       }
 
       template <typename Point>
@@ -46,7 +48,11 @@ namespace ecto {
         timer.tic();
         impl.filter(*keypoints);
         if (*verbose_)
-          std::cout << "UniformSampling" << " took " << timer.toc() << "ms. for a cloud with " << input->size() << " points" << std::endl;
+        {
+          double toc = timer.toc();
+          std::cout << "UniformSampling" << " took " << toc << "ms. for a cloud with " << input->size() << " points" << std::endl;
+          *tictoc_ = toc;
+        }
 
         keypoints->header = input->header;
         keypoints->sensor_origin_ = input->sensor_origin_;
@@ -57,6 +63,7 @@ namespace ecto {
 
       ecto::spore<float> radius_;
       ecto::spore<bool> verbose_;
+      ecto::spore<double> tictoc_;
       ecto::spore<ecto::pcl::PointCloud> output_;
     };
 
