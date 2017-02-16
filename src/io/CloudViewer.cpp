@@ -49,7 +49,7 @@ namespace ecto
       //           * First key is aimed to refer to the cloud
       //           * Second key is aimed to refer to the property
       //           * value
-      typedef std::map<std::string,std::map<int, std::vector<int> > > Properties;
+//      typedef std::map<std::string,std::map<int, std::vector<float> > > Properties;
 
       CloudViewer()
       : quit(false)
@@ -61,9 +61,11 @@ namespace ecto
       static void
       declare_params(tendrils& params)
       {
+//	Properties def;
+//	def["input1"][::pcl::visualization::RenderingProperties::PCL_VISUALIZER_FONT_SIZE] = std::vector<float> (3,1.0);
         params.declare<std::string>("window_name", "The window name", "cloud viewer");
         params.declare<int>("num_inputs", "Numb of input clouds to visualize", 1);
-        params.declare<Properties>("properties", "");
+//        params.declare<Properties>("properties", "", def);
       }
 
       static void
@@ -84,7 +86,9 @@ namespace ecto
       {
         params["window_name"] >> window_name;
         params["num_inputs"] >> num_inputs;
-        params["properties"] >> viz_prop;
+        std::cout << "djdjdj" << std::endl;
+//        params["properties"] >> viz_prop;
+        std::cout << "aaa" << std::endl;
 
 //        std::cout << viz_prop["input2"][4][0] << std::endl;
       }
@@ -204,6 +208,7 @@ namespace ecto
       int
       process(const tendrils& inputs, const tendrils& outputs)
       {
+	std::cout << "process" << std::endl;
         if (quit)
         {
           runner_thread_->join();
@@ -226,10 +231,10 @@ namespace ecto
           {
             ECTO_SCOPED_CALLPYTHON();
 
-            for (int i=1; i <= num_inputs; i++)
-            {
+//            for (int i=1; i <= num_inputs; i++)
+//            {
               std::stringstream ss;
-              ss << "input" << i;
+              ss << "input" << 1;
 
               // Prevent to visualize an empty input cloud
               PointCloud cloud = inputs.get<PointCloud>(ss.str());
@@ -241,7 +246,7 @@ namespace ecto
               boost::shared_ptr<boost::signals2::scoped_connection> c(new boost::signals2::scoped_connection);
               *c = signal_.connect(show_dispatch_runner(dispatch, varient));
               jobs_.push_back(c);
-            }
+//            }
           }
         }
 
@@ -263,7 +268,7 @@ namespace ecto
         }
       }
 
-      Properties viz_prop;
+//      Properties viz_prop;
       int num_inputs;
       std::string window_name;
       boost::shared_ptr<PCLVisualizer> viewer_;
