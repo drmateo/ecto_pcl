@@ -182,3 +182,5 @@ struct pcl_takes_point_trait2<PclType<PointIn, PointOut>, boost::shared_ptr<cons
 
 using ecto::tendrils;
 
+
+

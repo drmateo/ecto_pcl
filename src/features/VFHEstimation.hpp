@@ -21,6 +21,7 @@ namespace ecto {
       using Estimation<PointT, EstimatorT>::locator_;
       using Estimation<PointT, EstimatorT>::name_;
       using Estimation<PointT, EstimatorT>::verbose_;
+      using Estimation<PointT, EstimatorT>::tictoc_;
       using Estimation<PointT, EstimatorT>::surface_;
       using Estimation<PointT, EstimatorT>::output_;
 
@@ -66,7 +67,12 @@ namespace ecto {
         timer.tic();
         impl.compute(*output);
         if (*verbose_)
-          std::cout << *name_ << " took " << timer.toc() << "ms. for a cloud with " << input->size() << " points" << std::endl;
+        {
+          double toc = timer.toc();
+          std::cout << *name_ << " took " << toc << "ms. for a cloud with " << input->size() << " points" << std::endl;
+
+          *tictoc_ = toc;
+        }
 
         output->header = input->header;
         output->sensor_origin_ = input->sensor_origin_;

@@ -53,6 +53,7 @@ namespace ecto {
       {
         inputs.declare<ecto::pcl::PointCloud> ("surface", "Cloud surface.");
         outputs.declare<ecto::pcl::FeatureCloud> ("output", "Cloud of features.");
+        outputs.declare<double> ("tictoc", "Process performance", std::numeric_limits<double>::max());
       }
 
       void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
@@ -64,6 +65,7 @@ namespace ecto {
         verbose_ = params["verbose"];
         surface_ = inputs["surface"];
         output_ = outputs["output"];
+        tictoc_ = outputs["tictoc"];
       }
 
       template <typename Point>
@@ -79,6 +81,7 @@ namespace ecto {
       ecto::spore<int> locator_;
       ecto::spore<std::string> name_;
       ecto::spore<bool> verbose_;
+      ecto::spore<double> tictoc_;
       ecto::spore<ecto::pcl::PointCloud> surface_;
       ecto::spore<ecto::pcl::FeatureCloud> output_;
     };
@@ -112,7 +115,11 @@ namespace ecto {
         timer.tic();
         impl.compute(*output);
         if (*verbose_)
-          std::cout << *name_ << " took " << timer.toc() << "ms. for a cloud with " << input->size() << " points" << std::endl;
+        {
+          double toc = timer.toc();
+          std::cout << *name_ << " took " << toc << "ms. for a cloud with " << input->size() << " points" << std::endl;
+          *tictoc_ = toc;
+        }
 
         output->header = input->header;
         output->sensor_origin_ = input->sensor_origin_;
@@ -152,7 +159,11 @@ namespace ecto {
         timer.tic();
         impl.compute(*output);
         if (*verbose_)
-          std::cout << *name_ << " took " << timer.toc() << "ms. for a cloud with " << input->size() << " points" << std::endl;
+        {
+          double toc = timer.toc();
+          std::cout << *name_ << " took " << toc << "ms. for a cloud with " << input->size() << " points" << std::endl;
+          *tictoc_ = toc;
+        }
 
         output->header = input->header;
         output->sensor_origin_ = input->sensor_origin_;

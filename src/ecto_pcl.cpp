@@ -221,6 +221,47 @@ struct PointCloudT2PointCloud
   ecto::tendril_ptr input_;
 };
 
+#include <boost/python/suite/indexing/map_indexing_suite.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <boost/python/stl_iterator.hpp>
+
+#include<map>
+#include<utility>
+
+namespace bp=boost::python;
+
+typedef std::map<int, std::vector<double> > Property;
+typedef std::map<std::string, Property > Properties;
+
+namespace ecto {
+  namespace py {
+
+
+    Properties dict_of_properties(bp::dict d)
+    {
+      Properties sl;
+
+      bp::list keys = d.keys();
+      bp::stl_input_iterator<std::string> key(keys),key_end;
+      for (; key != key_end; ++key)
+      {
+        bp::list props =  bp::extract<bp::dict>(d[*key])().keys();
+        bp::stl_input_iterator<int> prop(props),prop_end;
+        for (; prop != prop_end; ++prop)
+        {
+          std::vector<double> value;
+          bp::stl_input_iterator<double> begin((d[*key][*prop])),end;
+          std::copy(begin,end,std::back_inserter(value));
+          sl[  *key ][*prop] = value;
+        }
+      }
+      return sl;
+    }
+
+
+  } // End of namespace py.
+} // End of namespace ecto.
+
 ECTO_DEFINE_MODULE(ecto_pcl)
 {
   bp::enum_<pcl::SacModel>("SacModel")
@@ -249,7 +290,14 @@ ECTO_DEFINE_MODULE(ecto_pcl)
 
   bp::scope().attr("KDTREE_FLANN") = 0;
   bp::scope().attr("KDTREE_ORGANIZED_INDEX") = 1;
+
+  bp::class_<Properties > ("MapOfProperties")
+    .def(bp::map_indexing_suite<Properties > ());
+
+  bp::def("dict_of_properties", &ecto::py::dict_of_properties);
+
 }
+
 
 namespace ecto {
   namespace pcl {
