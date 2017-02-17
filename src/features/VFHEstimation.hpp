@@ -46,6 +46,22 @@ namespace ecto {
       {
         EstimatorT<Point, ::pcl::Normal, PointT> impl;
         typename ::pcl::PointCloud<PointT>::Ptr output(new typename ::pcl::PointCloud<PointT>);
+        ecto::spore<ecto::pcl::PointCloud>& surface = surface_;
+
+        output->header = input->header;
+        output->sensor_origin_ = input->sensor_origin_;
+        output->sensor_orientation_ = input->sensor_orientation_;
+        output->width = 0;
+        output->height = 1;
+        *output_ = ecto::pcl::feature_cloud_variant_t(output);
+
+        // If surface is declare but has less than 10 point stop process
+        if (surface->cast< typename ::pcl::PointCloud<Point> >()->size() < 10)
+          return ecto::OK;
+
+        // If there are not surface and input cluod has less than 10 point stop process
+        if (!surface->held && input->size() < 10)
+          return ecto::OK;
 
         if (*vp_x_ != 0.0 || *vp_y_ != 0.0 || *vp_z_ != 0.0)
              impl.setViewPoint(*vp_x_,*vp_y_,*vp_z_);
@@ -57,7 +73,6 @@ namespace ecto {
         typename ::pcl::search::KdTree<Point>::Ptr tree_ (new ::pcl::search::KdTree<Point>);
         impl.setSearchMethod(tree_);
 
-        ecto::spore<ecto::pcl::PointCloud>& surface = surface_;
         if (surface->held)
           impl.setSearchSurface(surface->cast< typename ::pcl::PointCloud<Point> >());
         impl.setInputNormals(normals);
@@ -74,9 +89,6 @@ namespace ecto {
           *tictoc_ = toc;
         }
 
-        output->header = input->header;
-        output->sensor_origin_ = input->sensor_origin_;
-        output->sensor_orientation_ = input->sensor_orientation_;
         *output_ = ecto::pcl::feature_cloud_variant_t(output);
         return ecto::OK;
       }

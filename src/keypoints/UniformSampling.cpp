@@ -42,6 +42,17 @@ namespace ecto {
         ::pcl::UniformSampling<Point> impl;
         typename ::pcl::PointCloud< Point >::Ptr keypoints(new typename ::pcl::PointCloud< Point >);
 
+        keypoints->header = input->header;
+        keypoints->sensor_origin_ = input->sensor_origin_;
+        keypoints->sensor_orientation_ = input->sensor_orientation_;
+        keypoints->width = 0;
+        keypoints->height = 1;
+        *output_ = ecto::pcl::xyz_cloud_variant_t(keypoints);
+
+        // If input cluod has less than 10 point stop process
+        if (input->size() < 10)
+          return ecto::OK;
+
         impl.setRadiusSearch(*radius_);
         impl.setInputCloud(input);
         ::pcl::console::TicToc timer;
@@ -54,9 +65,6 @@ namespace ecto {
           *tictoc_ = toc;
         }
 
-        keypoints->header = input->header;
-        keypoints->sensor_origin_ = input->sensor_origin_;
-        keypoints->sensor_orientation_ = input->sensor_orientation_;
         *output_ = ecto::pcl::xyz_cloud_variant_t(keypoints);
         return ecto::OK;
       }

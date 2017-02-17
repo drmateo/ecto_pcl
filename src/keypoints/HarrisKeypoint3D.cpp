@@ -76,6 +76,17 @@ namespace ecto {
         ::pcl::HarrisKeypoint3D<Point, ::pcl::PointXYZI, ::pcl::Normal> impl;
         typename ::pcl::PointCloud< ::pcl::PointXYZI >::Ptr keypoints(new typename ::pcl::PointCloud< ::pcl::PointXYZI >);
 
+        keypoints->header = input->header;
+        keypoints->sensor_origin_ = input->sensor_origin_;
+        keypoints->sensor_orientation_ = input->sensor_orientation_;
+        keypoints->width = 0;
+        keypoints->height = 1;
+        *output_ = ecto::pcl::xyz_cloud_variant_t(keypoints);
+
+        // If input cluod has less than 10 point stop process
+        if (input->size() < 10)
+          return ecto::OK;
+
         typename ::pcl::search::Search<Point>::Ptr tree_;
         switch (*locator_)
         {
@@ -140,9 +151,6 @@ namespace ecto {
           *tictoc_ = toc;
         }
 
-        keypoints->header = input->header;
-        keypoints->sensor_origin_ = input->sensor_origin_;
-        keypoints->sensor_orientation_ = input->sensor_orientation_;
         *output_ = ecto::pcl::xyz_cloud_variant_t(keypoints);
         return ecto::OK;
       }
