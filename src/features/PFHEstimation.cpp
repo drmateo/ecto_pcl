@@ -32,7 +32,7 @@
 
 namespace ecto {
   namespace pcl {
-    typedef Estimation< ::pcl::PFHSignature125, ::pcl::PFHEstimation > PFHEstimation;
+    typedef EstimationFromNormals< ::pcl::PFHSignature125, ::pcl::PFHEstimation > PFHEstimation;
   }
 }
 

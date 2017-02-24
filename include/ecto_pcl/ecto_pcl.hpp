@@ -68,12 +68,14 @@ POINT_CLOUD_REGISTER_POINT_STRUCT (ecto::pcl::Histogram153, (float[153], histogr
   ((pcl::PFHSignature125, PFHSIGNATURE125))          \
   ((pcl::FPFHSignature33, FPFHSIGNATURE33))          \
   ((pcl::VFHSignature308, VFHSIGNATURE308))          \
-  ((pcl::UniqueShapeContext1960, UniqueShapeContext1960)) \
-  ((pcl::GRSDSignature21, GRSDSIGNATURE21))          \
   ((pcl::SHOT352, SHOT352))                          \
-  ((pcl::Narf36, NARF36))                            \
-  ((pcl::PrincipalRadiiRSD, PRINCIPALRADIIRSD)) \
-  ((ecto::pcl::Histogram153, HISTOGRAM153))
+  ((pcl::UniqueShapeContext1960, UNIQUESHAPECONTEXT1960)) \
+  ((pcl::ShapeContext1980, SHAPECONTEXT1980))         \
+  ((pcl::ESFSignature640, ESFSIGNATURE640))          \
+  ((pcl::GRSDSignature21, GRSDSIGNATURE21))          \
+  ((pcl::PrincipalRadiiRSD, PRINCIPALRADIIRSD))      \
+  ((ecto::pcl::Histogram153, HISTOGRAM153))          \
+  ((pcl::Narf36, NARF36))
 
 #define DECLARECLOUD(r, data, ELEM) \
   typedef pcl::PointCloud< BOOST_PP_TUPLE_ELEM(2, 0, ELEM) > BOOST_PP_CAT(Cloud, BOOST_PP_TUPLE_ELEM(2, 1, ELEM));
@@ -161,9 +163,13 @@ namespace ecto{
       FORMAT_PFHSIGNATURE,
       FORMAT_FPFHSIGNATURE,
       FORMAT_VFHSIGNATURE,
+      FORMAT_SHOT,
       FORMAT_UNIQUESHAPECONTEXT,
+      FORMAT_ESFSIGNATURE,
+      FORMAT_SHAPECONTEXT,
       FORMAT_GRSDSIGNATURE,
-      FORMAT_SHOT
+      FORMAT_PRINCIPALRADIIRSD,
+      FORMAT_HISTOGRAM153
     };
 
   }

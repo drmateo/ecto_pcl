@@ -74,6 +74,12 @@ namespace ecto {
           case FORMAT_FPFHSIGNATURE:
           case FORMAT_VFHSIGNATURE:
           case FORMAT_SHOT:
+          case FORMAT_UNIQUESHAPECONTEXT:
+          case FORMAT_ESFSIGNATURE:
+          case FORMAT_SHAPECONTEXT:
+          case FORMAT_GRSDSIGNATURE:
+          case FORMAT_PRINCIPALRADIIRSD:
+          case FORMAT_HISTOGRAM153:
             outputs.declare<FeatureCloud>("output", "A point cloud from the pcd file.");
         }
       }
@@ -94,6 +100,12 @@ namespace ecto {
           case FORMAT_FPFHSIGNATURE:
           case FORMAT_VFHSIGNATURE:
           case FORMAT_SHOT:
+          case FORMAT_UNIQUESHAPECONTEXT:
+          case FORMAT_ESFSIGNATURE:
+          case FORMAT_SHAPECONTEXT:
+          case FORMAT_GRSDSIGNATURE:
+          case FORMAT_PRINCIPALRADIIRSD:
+          case FORMAT_HISTOGRAM153:
             feature_ = outputs["output"];
         }
 
@@ -188,7 +200,72 @@ namespace ecto {
               FeatureCloud p( cloud );
               *feature_ = p;
             } break;
-
+          case FORMAT_UNIQUESHAPECONTEXT:
+            {
+              ::pcl::PointCloud< ::pcl::UniqueShapeContext1960 >::Ptr cloud (new ::pcl::PointCloud< ::pcl::UniqueShapeContext1960 >);
+              if ( loadPCD< ::pcl::UniqueShapeContext1960 > (filename_, cloud, buffer_) == -1)
+              {
+                throw std::runtime_error("PCDReader: failed to read UniqueShapeContext1960 cloud.");
+                return 1;
+              }
+              FeatureCloud p( cloud );
+              *feature_ = p;
+            } break;
+          case FORMAT_ESFSIGNATURE:
+            {
+              ::pcl::PointCloud< ::pcl::ESFSignature640 >::Ptr cloud (new ::pcl::PointCloud< ::pcl::ESFSignature640 >);
+              if ( loadPCD< ::pcl::ESFSignature640 > (filename_, cloud, buffer_) == -1)
+              {
+                throw std::runtime_error("PCDReader: failed to read ESFSignature640 cloud.");
+                return 1;
+              }
+              FeatureCloud p( cloud );
+              *feature_ = p;
+            } break;
+          case FORMAT_SHAPECONTEXT:
+            {
+              ::pcl::PointCloud< ::pcl::ShapeContext1980 >::Ptr cloud (new ::pcl::PointCloud< ::pcl::ShapeContext1980 >);
+              if ( loadPCD< ::pcl::ShapeContext1980 > (filename_, cloud, buffer_) == -1)
+              {
+                throw std::runtime_error("PCDReader: failed to read ShapeContext1980 cloud.");
+                return 1;
+              }
+              FeatureCloud p( cloud );
+              *feature_ = p;
+            } break;
+          case FORMAT_GRSDSIGNATURE:
+            {
+              ::pcl::PointCloud< ::pcl::GRSDSignature21>::Ptr cloud (new ::pcl::PointCloud< ::pcl::GRSDSignature21 >);
+              if ( loadPCD< ::pcl::GRSDSignature21 > (filename_, cloud, buffer_) == -1)
+              {
+                throw std::runtime_error("PCDReader: failed to read GRSDSignature21 cloud.");
+                return 1;
+              }
+              FeatureCloud p( cloud );
+              *feature_ = p;
+            } break;
+          case FORMAT_PRINCIPALRADIIRSD:
+            {
+              ::pcl::PointCloud< ::pcl::PrincipalRadiiRSD >::Ptr cloud (new ::pcl::PointCloud< ::pcl::PrincipalRadiiRSD >);
+              if ( loadPCD< ::pcl::PrincipalRadiiRSD > (filename_, cloud, buffer_) == -1)
+              {
+                throw std::runtime_error("PCDReader: failed to read PrincipalRadiiRSD cloud.");
+                return 1;
+              }
+              FeatureCloud p( cloud );
+              *feature_ = p;
+            } break;
+          case FORMAT_HISTOGRAM153:
+            {
+              ::pcl::PointCloud< ecto::pcl::Histogram153 >::Ptr cloud (new ::pcl::PointCloud< ecto::pcl::Histogram153 >);
+              if ( loadPCD< ecto::pcl::Histogram153 > (filename_, cloud, buffer_) == -1)
+              {
+                throw std::runtime_error("PCDReader: failed to read ecto::pcl::Histogram153 cloud.");
+                return 1;
+              }
+              FeatureCloud p( cloud );
+              *feature_ = p;
+            } break;
           // Otherwise
           default:
             throw std::runtime_error("PCDReader: Unknown cloud type.");

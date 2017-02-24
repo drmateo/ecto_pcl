@@ -14,20 +14,14 @@
 namespace ecto {
   namespace pcl {
     template <typename PointT = ::pcl::VFHSignature308, template <class A, class B, class C > class EstimatorT = ::pcl::VFHEstimation>
-    struct VFHEstimationImpl :  Estimation<PointT, EstimatorT>
+    struct VFHEstimationImpl :  EstimationFromNormals<PointT, EstimatorT>
     {
-      using Estimation<PointT, EstimatorT>::k_;
-      using Estimation<PointT, EstimatorT>::radius_;
-      using Estimation<PointT, EstimatorT>::locator_;
-      using Estimation<PointT, EstimatorT>::name_;
-      using Estimation<PointT, EstimatorT>::verbose_;
-      using Estimation<PointT, EstimatorT>::tictoc_;
-      using Estimation<PointT, EstimatorT>::surface_;
-      using Estimation<PointT, EstimatorT>::output_;
+      using EstimationFromNormals<PointT, EstimatorT>::init;
+      using EstimationFromNormals<PointT, EstimatorT>::compute;
 
       static void declare_params(ecto::tendrils& params)
       {
-        Estimation<PointT, EstimatorT>::declare_params(params);
+        EstimationFromNormals<PointT, EstimatorT>::declare_params(params);
         params.declare<float> ("vp_x", "Viewpoint x component.", 0.f);
         params.declare<float> ("vp_y", "Viewpoint y component.", 0.f);
         params.declare<float> ("vp_z", "Viewpoint z component.", 0.f);
@@ -35,7 +29,7 @@ namespace ecto {
 
       void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        Estimation<PointT, EstimatorT>::configure(params, inputs, outputs);
+        EstimationFromNormals<PointT, EstimatorT>::configure(params, inputs, outputs);
         vp_x_ = params["vp_x"], vp_y_ = params["vp_x"], vp_z_ = params["vp_x"];
       }
 
@@ -44,53 +38,35 @@ namespace ecto {
                   boost::shared_ptr<const ::pcl::PointCloud<Point> >& input,
                   boost::shared_ptr<const ::pcl::PointCloud< ::pcl::Normal> >& normals)
       {
-        EstimatorT<Point, ::pcl::Normal, PointT> impl;
+        typedef EstimatorT<Point, ::pcl::Normal, PointT>  EstimatorImplT;
+        EstimatorImplT impl;
         typename ::pcl::PointCloud<PointT>::Ptr output(new typename ::pcl::PointCloud<PointT>);
-        ecto::spore<ecto::pcl::PointCloud>& surface = surface_;
 
-        output->header = input->header;
-        output->sensor_origin_ = input->sensor_origin_;
-        output->sensor_orientation_ = input->sensor_orientation_;
-        output->width = 0;
-        output->height = 1;
-        *output_ = ecto::pcl::feature_cloud_variant_t(output);
+        ReturnCode code = init<Point, EstimatorImplT > (input, normals, reinterpret_cast<void*> (&impl));
+        if(code != ecto::CONTINUE)
+          return code;
 
-        // If surface is declare but has less than 10 point stop process
-        if (surface->cast< typename ::pcl::PointCloud<Point> >()->size() < 10)
-          return ecto::OK;
+        EstimationFromNormals<PointT, EstimatorT>::template compute<Point, PointT, EstimatorImplT > (input, output, reinterpret_cast<void*> (&impl));
 
-        // If there are not surface and input cluod has less than 10 point stop process
-        if (!surface->held && input->size() < 10)
-          return ecto::OK;
-
-        if (*vp_x_ != 0.0 || *vp_y_ != 0.0 || *vp_z_ != 0.0)
-             impl.setViewPoint(*vp_x_,*vp_y_,*vp_z_);
-           else
-             impl.setViewPoint(input->sensor_origin_ [0],input->sensor_origin_ [1],input->sensor_origin_ [2]);
-
-        impl.setKSearch(*k_);
-        impl.setRadiusSearch(*radius_);
-        typename ::pcl::search::KdTree<Point>::Ptr tree_ (new ::pcl::search::KdTree<Point>);
-        impl.setSearchMethod(tree_);
-
-        if (surface->held)
-          impl.setSearchSurface(surface->cast< typename ::pcl::PointCloud<Point> >());
-        impl.setInputNormals(normals);
-        impl.setInputCloud(input);
-
-        ::pcl::console::TicToc timer;
-        timer.tic();
-        impl.compute(*output);
-        if (*verbose_)
-        {
-          double toc = timer.toc();
-          std::cout << *name_ << " took " << toc << "ms. for a cloud with " << input->size() << " points" << std::endl;
-
-          *tictoc_ = toc;
-        }
-
-        *output_ = ecto::pcl::feature_cloud_variant_t(output);
         return ecto::OK;
+      }
+
+      template<typename PointIn, typename EstimatorImpl>
+      ReturnCode init(const typename ::pcl::PointCloud<PointIn>::ConstPtr& input,
+                      const typename ::pcl::PointCloud< ::pcl::Normal >::ConstPtr& normals,
+                      void* impl)
+      {
+        ReturnCode code = EstimationFromNormals<PointT, EstimatorT>::template init<PointIn, EstimatorImpl> (input, normals, impl);
+        if(code != ecto::CONTINUE)
+          return code;
+
+        EstimatorImpl* impl_cast = reinterpret_cast<EstimatorImpl*> (impl);
+        if (*vp_x_ != 0.0 || *vp_y_ != 0.0 || *vp_z_ != 0.0)
+          impl_cast->setViewPoint(*vp_x_,*vp_y_,*vp_z_);
+         else
+           impl_cast->setViewPoint(input->sensor_origin_ [0],input->sensor_origin_ [1],input->sensor_origin_ [2]);
+
+        return ecto::CONTINUE;
       }
 
       spore<float> vp_x_, vp_y_, vp_z_;

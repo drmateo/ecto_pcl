@@ -30,11 +30,72 @@
 #include <pcl/features/usc.h>
 #include "FeatureEstimator.hpp"
 
-//namespace ecto {
-//  namespace pcl {
-//    typedef ecto::pcl::Estimation< ::pcl::UniqueShapeContext1960, ::pcl::UniqueShapeContext > USCEstimation;
-//  }
-//}
-//
-//ECTO_CELL(ecto_pcl, ecto::pcl::PclCellWithNormals<ecto::pcl::USCEstimation>,  "USCEstimation", "This cell provides Clustered Viewpoint Feature Histogram estimation.");
+namespace ecto {
+  namespace pcl {
+
+    template <typename PointT = ::pcl::UniqueShapeContext1960, template <class A, class B, class C > class EstimatorT = ::pcl::UniqueShapeContext>
+    struct USCEstimationImpl :  EstimationWithReferenceFrame<PointT, EstimatorT>
+    {
+      using EstimationBase::init;
+      using EstimationBase::compute;
+
+      static void declare_params(ecto::tendrils& params)
+      {
+        EstimationWithReferenceFrame<PointT, EstimatorT>::declare_params(params);
+        params.declare<float> ("minimal_radius", ".", 0.1f);
+        params.declare<float> ("density_radius", ".", 0.1f);
+        params.declare<float> ("rf_radius", ".", 2.f);
+      }
+
+      void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
+      {
+        EstimationWithReferenceFrame<PointT, EstimatorT>::configure(params, inputs, outputs);
+        minimal_radius_ = params["minimal_radius"];
+        density_radius_ = params["density_radius"];
+        rf_radius_ = params["rf_radius"];
+      }
+
+      template <typename Point>
+      int process(const tendrils& inputs, const tendrils& outputs,
+                  boost::shared_ptr<const ::pcl::PointCloud<Point> >& input)
+      {
+        typedef EstimatorT<Point,  PointT, ::pcl::ReferenceFrame>  EstimatorImplT;
+        EstimatorImplT impl;
+        typename ::pcl::PointCloud<PointT>::Ptr output(new typename ::pcl::PointCloud<PointT>);
+
+        ReturnCode code = init<Point, EstimatorImplT > (input, reinterpret_cast<void*> (&impl));
+        if(code != ecto::CONTINUE)
+          return code;
+
+        EstimationBase::template compute<Point, PointT, EstimatorImplT > (input, output, reinterpret_cast<void*> (&impl));
+
+        return ecto::OK;
+      }
+
+      template<typename PointIn, typename EstimatorImpl>
+      ReturnCode init(const typename ::pcl::PointCloud<PointIn>::ConstPtr& input,
+                      void* impl)
+      {
+        ReturnCode code = EstimationBase::template init<PointIn, EstimatorImpl> (input, impl);
+        if(code != ecto::CONTINUE)
+          return code;
+
+        EstimatorImpl* impl_cast = reinterpret_cast<EstimatorImpl*> (impl);
+        impl_cast->setMinimalRadius(*minimal_radius_);
+        impl_cast->setPointDensityRadius(*density_radius_);
+        impl_cast->setLocalRadius(*rf_radius_);
+
+        return ecto::CONTINUE;
+      }
+
+      spore<float> minimal_radius_;
+      spore<float> density_radius_;
+      spore<float> rf_radius_;
+    };
+
+    typedef ecto::pcl::USCEstimationImpl< > USCEstimation;
+  }
+}
+
+ECTO_CELL(ecto_pcl, ecto::pcl::PclCell<ecto::pcl::USCEstimation>,  "USCEstimation", "This cell provides Clustered Viewpoint Feature Histogram estimation.");
 

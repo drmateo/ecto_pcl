@@ -32,7 +32,7 @@
 
 namespace ecto {
   namespace pcl {
-    typedef ecto::pcl::Estimation< ::pcl::PrincipalRadiiRSD, ::pcl::RSDEstimation > RSDEstimation;
+    typedef ecto::pcl::EstimationFromNormals< ::pcl::PrincipalRadiiRSD, ::pcl::RSDEstimation > RSDEstimation;
   }
 }
 

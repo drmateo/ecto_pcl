@@ -32,9 +32,68 @@
 
 namespace ecto {
   namespace pcl {
-    typedef ecto::pcl::Estimation< ::pcl::ShapeContext1980, ::pcl::ShapeContext3DEstimation > SC3DEstimation;
+
+    template <typename PointT = ::pcl::ShapeContext1980, template <class A, class B, class C > class EstimatorT = ::pcl::ShapeContext3DEstimation>
+    struct SC3DEstimationImpl :  EstimationFromNormals<PointT, EstimatorT>
+    {
+      using EstimationFromNormals<PointT, EstimatorT>::init;
+      using EstimationFromNormals<PointT, EstimatorT>::compute;
+
+      static void declare_params(ecto::tendrils& params)
+      {
+        EstimationFromNormals<PointT, EstimatorT>::declare_params(params);
+        params.declare<float> ("minimal_radius", ".", 0.1f);
+        params.declare<float> ("density_radius", ".", 0.2f);
+      }
+
+      void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
+      {
+        EstimationFromNormals<PointT, EstimatorT>::configure(params, inputs, outputs);
+        minimal_radius_ = params["minimal_radius"];
+        density_radius_ = params["density_radius"];
+      }
+
+      template <typename Point>
+      int process(const tendrils& inputs, const tendrils& outputs,
+                  boost::shared_ptr<const ::pcl::PointCloud<Point> >& input,
+                  boost::shared_ptr<const ::pcl::PointCloud< ::pcl::Normal> >& normals)
+      {
+        typedef EstimatorT<Point, ::pcl::Normal, PointT>  EstimatorImplT;
+        EstimatorImplT impl;
+        typename ::pcl::PointCloud<PointT>::Ptr output(new typename ::pcl::PointCloud<PointT>);
+
+        ReturnCode code = init<Point, EstimatorImplT > (input, normals, reinterpret_cast<void*> (&impl));
+        if(code != ecto::CONTINUE)
+          return code;
+
+        EstimationFromNormals<PointT, EstimatorT>::template compute<Point, PointT, EstimatorImplT > (input, output, reinterpret_cast<void*> (&impl));
+
+        return ecto::OK;
+      }
+
+      template<typename PointIn, typename EstimatorImpl>
+      ReturnCode init(const typename ::pcl::PointCloud<PointIn>::ConstPtr& input,
+                      const typename ::pcl::PointCloud< ::pcl::Normal >::ConstPtr& normals,
+                      void* impl)
+      {
+        ReturnCode code = EstimationFromNormals<PointT, EstimatorT>::template init<PointIn, EstimatorImpl> (input, normals, impl);
+        if(code != ecto::CONTINUE)
+          return code;
+
+        EstimatorImpl* impl_cast = reinterpret_cast<EstimatorImpl*> (impl);
+        impl_cast->setMinimalRadius(*minimal_radius_);
+        impl_cast->setPointDensityRadius(*density_radius_);
+
+        return ecto::CONTINUE;
+      }
+
+      spore<float> minimal_radius_;
+      spore<float> density_radius_;
+    };
+
+    typedef ecto::pcl::SC3DEstimationImpl< > SC3DEstimation;
   }
 }
 
-ECTO_CELL(ecto_pcl, ecto::pcl::PclCellWithNormals<ecto::pcl::SC3DEstimation>,  "3DSCEstimation", "This cell provides Clustered Viewpoint Feature Histogram estimation.");
+ECTO_CELL(ecto_pcl, ecto::pcl::PclCellWithNormals<ecto::pcl::SC3DEstimation>,  "SC3DEstimation", "This cell provides Clustered Viewpoint Feature Histogram estimation.");
 

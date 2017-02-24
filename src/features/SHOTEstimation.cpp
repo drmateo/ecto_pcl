@@ -32,7 +32,7 @@
 
 namespace ecto {
   namespace pcl {
-    typedef ecto::pcl::EstimationWithReferenceFrame< ::pcl::SHOT352, ::pcl::SHOTEstimation > SHOTEstimation;
+    typedef ecto::pcl::EstimationFromNormalsWithReferenceFrame< ::pcl::SHOT352, ::pcl::SHOTEstimation > SHOTEstimation;
   }
 }
 
