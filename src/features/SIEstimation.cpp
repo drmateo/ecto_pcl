@@ -33,7 +33,7 @@
 
 namespace ecto {
   namespace pcl {
-    typedef ecto::pcl::Estimation< Histogram153, ::pcl::SpinImageEstimation > SpinImageEstimation;
+    typedef ecto::pcl::EstimationFromNormals< Histogram153, ::pcl::SpinImageEstimation > SpinImageEstimation;
   }
 }
 

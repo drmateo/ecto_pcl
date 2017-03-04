@@ -30,11 +30,11 @@
 #include <pcl/features/esf.h>
 #include "FeatureEstimator.hpp"
 
-//namespace ecto {
-//  namespace pcl {
-//    typedef ecto::pcl::Estimation< ::pcl::ESFSignature640, ::pcl::ESFEstimation > ESFEstimation;
-//  }
-//}
-//
-//ECTO_CELL(ecto_pcl, ecto::pcl::PclCellWithNormals<ecto::pcl::ESFEstimation>,  "ESFEstimation", "This cell provides ensemble of shape functions estimation.");
-//
+namespace ecto {
+  namespace pcl {
+    typedef ecto::pcl::Estimation< ::pcl::ESFSignature640, ::pcl::ESFEstimation > ESFEstimation;
+  }
+}
+
+ECTO_CELL(ecto_pcl, ecto::pcl::PclCell<ecto::pcl::ESFEstimation>,  "ESFEstimation", "This cell provides ensemble of shape functions estimation.");
+

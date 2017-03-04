@@ -32,7 +32,7 @@
 
 namespace ecto {
   namespace pcl {
-    typedef ecto::pcl::Estimation< ::pcl::GRSDSignature21, ::pcl::GRSDEstimation > GRSDEstimation;
+    typedef ecto::pcl::EstimationFromNormals< ::pcl::GRSDSignature21, ::pcl::GRSDEstimation > GRSDEstimation;
   }
 }
 
