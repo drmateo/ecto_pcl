@@ -257,9 +257,9 @@ namespace ecto
               boost::shared_ptr<boost::signals2::scoped_connection> c(new boost::signals2::scoped_connection);
               *c = signal_.connect(show_dispatch_runner(dispatch, varient));
               jobs_.push_back(c);
-//            }
-          }
-        }
+	    }
+	  }
+	}
 
         return ecto::OK;
       }
