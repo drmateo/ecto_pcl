@@ -158,6 +158,8 @@ namespace ecto
           }
           viewer_->spinOnce(20);
         }
+        if (!viewer_->wasStopped())
+          viewer_->close();
       }
 
       struct show_dispatch: boost::static_visitor<>
@@ -242,7 +244,7 @@ namespace ecto
         if (inputs.get<bool>("__quit__"))
         {
           viewer_->close();
-          runner_thread_->interrupt();
+//          runner_thread_->interrupt();
           runner_thread_->join();
           return ecto::QUIT;
         }
