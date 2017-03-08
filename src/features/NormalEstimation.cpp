@@ -72,7 +72,7 @@ namespace ecto {
         typename ::pcl::PointCloud< ::pcl::Normal >::Ptr normals(new typename ::pcl::PointCloud< ::pcl::Normal >);
 
         // If surface is declare but has less than 10 point stop process
-        if (input->size() < 0)
+        if (!input || input->size() == 0)
           return ecto::OK;
 
         if (*vp_x_ != 0.0 || *vp_y_ != 0.0 || *vp_z_ != 0.0)
