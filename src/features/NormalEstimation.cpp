@@ -71,6 +71,10 @@ namespace ecto {
         ::pcl::NormalEstimation<Point, ::pcl::Normal> impl;
         typename ::pcl::PointCloud< ::pcl::Normal >::Ptr normals(new typename ::pcl::PointCloud< ::pcl::Normal >);
 
+        // If surface is declare but has less than 10 point stop process
+        if (input->size() < 0)
+          return ecto::OK;
+
         if (*vp_x_ != 0.0 || *vp_y_ != 0.0 || *vp_z_ != 0.0)
           impl.setViewPoint(*vp_x_,*vp_y_,*vp_z_);
         else
