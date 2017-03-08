@@ -78,7 +78,6 @@ namespace ecto {
         // If surface is declare but has less than 10 point stop process
         if (!input || input->size() == 0)
           return ecto::OK;
-        std::cout << "adios" << std::endl;
 
         if (*vp_x_ != 0.0 || *vp_y_ != 0.0 || *vp_z_ != 0.0)
           impl.setViewPoint(*vp_x_,*vp_y_,*vp_z_);
