@@ -36,6 +36,7 @@ namespace ecto {
     template <typename PointT = ::pcl::UniqueShapeContext1960, template <class A, class B, class C > class EstimatorT = ::pcl::UniqueShapeContext>
     struct USCEstimationImpl :  EstimationWithReferenceFrame<PointT, EstimatorT>
     {
+      using EstimationBase::output_;
       using EstimationBase::init;
       using EstimationBase::compute;
 
@@ -65,7 +66,10 @@ namespace ecto {
 
         ReturnCode code = init<Point, EstimatorImplT > (input, reinterpret_cast<void*> (&impl));
         if(code != ecto::CONTINUE)
+        {
+          *output_ = ecto::pcl::feature_cloud_variant_t(output);
           return code;
+        }
 
         EstimationBase::template compute<Point, PointT, EstimatorImplT > (input, output, reinterpret_cast<void*> (&impl));
 

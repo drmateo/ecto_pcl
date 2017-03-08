@@ -35,6 +35,7 @@ namespace ecto {
     template <typename PointT = ::pcl::VFHSignature308, template <class A, class B, class C > class EstimatorT = ::pcl::OURCVFHEstimation>
     struct OURCVFHEstimationImpl :  CVFHEstimationImpl<PointT, EstimatorT>
     {
+      using EstimationBase::output_;
       using EstimationFromNormals<PointT, EstimatorT>::compute;
       using CVFHEstimationImpl<PointT, EstimatorT>::init;
 
@@ -65,7 +66,11 @@ namespace ecto {
 
         ReturnCode code = init<Point, EstimatorImplT > (input, normals, reinterpret_cast<void*> (&impl));
         if(code != ecto::CONTINUE)
+        {
+          *output_ = ecto::pcl::feature_cloud_variant_t(output);
           return code;
+        }
+
         EstimationFromNormals<PointT, EstimatorT>::template compute<Point, PointT, EstimatorImplT > (input, output, reinterpret_cast<void*> (&impl));
         return ecto::OK;
       }

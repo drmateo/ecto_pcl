@@ -73,13 +73,16 @@ namespace ecto {
       template<typename Point, typename EstimatorImpl>
       ReturnCode init(const typename ::pcl::PointCloud<Point>::ConstPtr& input, void* impl)
       {
+	if (!input || input->size() == 0)
+	  return ecto::OK;
+
         ecto::spore<ecto::pcl::PointCloud>& surface = surface_;
         // If surface is declare but has less than 10 point stop process
-        if (surface->cast< typename ::pcl::PointCloud<Point> >()->size() < 10)
+        if (surface->held && surface->cast< typename ::pcl::PointCloud<Point> >()->size() < 10)
           return ecto::OK;
 
         // If there are not surface and input cluod has less than 10 point stop process
-        if (!surface_->held && input->size() < 10)
+        if (!surface->held && input->size() < 10)
           return ecto::OK;
 
         EstimatorImpl* impl_cast = reinterpret_cast<EstimatorImpl*> (impl);
@@ -147,7 +150,10 @@ namespace ecto {
 
         ReturnCode code = init<Point, EstimatorT<Point, PointT> > (input, reinterpret_cast<void*> (&impl));
         if(code != ecto::CONTINUE)
+        {
+          *output_ = ecto::pcl::feature_cloud_variant_t(output);
           return code;
+        }
 
         compute<Point, PointT, EstimatorT<Point, PointT> > (input, output, reinterpret_cast<void*> (&impl));
 
@@ -193,7 +199,10 @@ namespace ecto {
 
         ReturnCode code = init<Point, EstimatorImplT > (input, normals, reinterpret_cast<void*> (&impl));
         if(code != ecto::CONTINUE)
+        {
+          *output_ = ecto::pcl::feature_cloud_variant_t(output);
           return code;
+        }
 
         compute<Point, PointT, EstimatorImplT > (input, output, reinterpret_cast<void*> (&impl));
 
@@ -218,7 +227,10 @@ namespace ecto {
 
         ReturnCode code = init<Point, EstimatorT<Point, PointT, ::pcl::ReferenceFrame> > (input, reinterpret_cast<void*> (&impl));
         if(code != ecto::CONTINUE)
+        {
+          *output_ = ecto::pcl::feature_cloud_variant_t(output);
           return code;
+        }
 
         compute<Point, PointT, EstimatorT<Point, PointT, ::pcl::ReferenceFrame> > (input, output, reinterpret_cast<void*> (&impl));
 
@@ -242,6 +254,10 @@ namespace ecto {
         if(code != ecto::CONTINUE)
           return code;
 
+        // If there are not surface and input cluod has less than 10 point stop process
+        if (normals->size() < 10)
+          return ecto::OK;
+
         EstimatorImpl* impl_cast = reinterpret_cast<EstimatorImpl*> (impl);
         impl_cast->setInputNormals(normals);
 
@@ -258,7 +274,10 @@ namespace ecto {
 
         ReturnCode code = init<Point, EstimatorT<Point, ::pcl::Normal, PointT, ::pcl::ReferenceFrame> > (input, normals, reinterpret_cast<void*> (&impl));
         if(code != ecto::CONTINUE)
+        {
+          *output_ = ecto::pcl::feature_cloud_variant_t(output);
           return code;
+        }
 
         compute<Point, PointT, EstimatorT<Point, ::pcl::Normal, PointT, ::pcl::ReferenceFrame> > (input, output, reinterpret_cast<void*> (&impl));
 

@@ -36,6 +36,7 @@ namespace ecto {
     template <typename PointT = ::pcl::ShapeContext1980, template <class A, class B, class C > class EstimatorT = ::pcl::ShapeContext3DEstimation>
     struct SC3DEstimationImpl :  EstimationFromNormals<PointT, EstimatorT>
     {
+      using EstimationBase::output_;
       using EstimationFromNormals<PointT, EstimatorT>::init;
       using EstimationFromNormals<PointT, EstimatorT>::compute;
 
@@ -64,7 +65,10 @@ namespace ecto {
 
         ReturnCode code = init<Point, EstimatorImplT > (input, normals, reinterpret_cast<void*> (&impl));
         if(code != ecto::CONTINUE)
+        {
+          *output_ = ecto::pcl::feature_cloud_variant_t(output);
           return code;
+        }
 
         EstimationFromNormals<PointT, EstimatorT>::template compute<Point, PointT, EstimatorImplT > (input, output, reinterpret_cast<void*> (&impl));
 
