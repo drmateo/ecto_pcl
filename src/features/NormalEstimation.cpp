@@ -50,7 +50,10 @@ namespace ecto {
 
       static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        outputs.declare<ecto::pcl::FeatureCloud> ("output", "Cloud of features.");
+        typename ::pcl::PointCloud< ::pcl::Normal >::Ptr normals(new typename ::pcl::PointCloud< ::pcl::Normal >);
+        ecto::pcl::FeatureCloud def = ecto::pcl::feature_cloud_variant_t(normals);
+
+        outputs.declare<ecto::pcl::FeatureCloud> ("output", "Cloud of features.", def);
       }
 
       void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
