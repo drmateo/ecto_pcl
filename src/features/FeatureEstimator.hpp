@@ -73,7 +73,6 @@ namespace ecto {
       template<typename Point, typename EstimatorImpl>
       ReturnCode init(const typename ::pcl::PointCloud<Point>::ConstPtr& input, void* impl)
       {
-        std::cout << "adios1" << std::endl;
         ecto::spore<ecto::pcl::PointCloud>& surface = surface_;
         // If surface is declare but has less than 10 point stop process
         if (surface->cast< typename ::pcl::PointCloud<Point> >()->size() < 10)
@@ -100,7 +99,6 @@ namespace ecto {
       template<typename PointIn, typename PointOut, typename EstimatorImpl>
       void compute(const typename ::pcl::PointCloud<PointIn>::ConstPtr& input, typename ::pcl::PointCloud<PointOut>::Ptr& output, void* impl)
       {
-        std::cout << "adios2" << std::endl;
         EstimatorImpl* impl_cast = reinterpret_cast<EstimatorImpl*> (impl);
 
         output->header = input->header;
@@ -173,6 +171,10 @@ namespace ecto {
         ReturnCode code = EstimationBase::init<PointIn, EstimatorImpl> (input, impl);
         if(code != ecto::CONTINUE)
           return code;
+
+        // If there are not surface and input cluod has less than 10 point stop process
+        if (normals->size() < 10)
+          return ecto::OK;
 
         EstimatorImpl* impl_cast = reinterpret_cast<EstimatorImpl*> (impl);
         impl_cast->setInputNormals(normals);
