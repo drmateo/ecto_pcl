@@ -63,15 +63,18 @@ namespace ecto {
         cloud->sensor_origin_ = input->sensor_origin_;
         cloud->sensor_orientation_ = input->sensor_orientation_;
 
-        if (!input->empty())
+        // If surface is declare but has less than 10 point stop process
+        if (!input || input->empty())
         {
-          ::pcl::RadiusOutlierRemoval<Point> filter;
-          filter.setMinNeighborsInRadius(*min_);
-          filter.setInputCloud(input);
-          filter.setRadiusSearch(*radius_);
-
-          filter.filter(*cloud);
+          *output_ = ecto::pcl::xyz_cloud_variant_t(cloud);
+          return ecto::OK;
         }
+
+        ::pcl::RadiusOutlierRemoval<Point> filter;
+        filter.setMinNeighborsInRadius(*min_);
+        filter.setInputCloud(input);
+        filter.setRadiusSearch(*radius_);
+        filter.filter(*cloud);
 
         *output_ = xyz_cloud_variant_t(cloud);
 

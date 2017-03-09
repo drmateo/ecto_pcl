@@ -56,17 +56,23 @@ namespace ecto {
       {
         typename ::pcl::PointCloud<Point>::Ptr cloud(new typename ::pcl::PointCloud<Point>);
         cloud->header = input->header;
+        cloud->sensor_origin_ = input->sensor_origin_;
+        cloud->sensor_orientation_ = input->sensor_orientation_;
 
-        if (!input->empty())
+        // If surface is declare but has less than 10 point stop process
+        if (!input || input->empty())
         {
-          //remove NAN points from the cloud
-          std::vector<int> indices;
-          ::pcl::removeNaNFromPointCloud<Point>(*input, *cloud, indices);
-          cloud->header = input->header;
-          cloud->sensor_origin_ = input->sensor_origin_;
-          cloud->sensor_orientation_ = input->sensor_orientation_;
-          cloud->is_dense = true;
+          *output_ = ecto::pcl::xyz_cloud_variant_t(cloud);
+          return ecto::OK;
         }
+
+        //remove NAN points from the cloud
+        std::vector<int> indices;
+        ::pcl::removeNaNFromPointCloud<Point>(*input, *cloud, indices);
+        cloud->header = input->header;
+        cloud->sensor_origin_ = input->sensor_origin_;
+        cloud->sensor_orientation_ = input->sensor_orientation_;
+        cloud->is_dense = true;
 
         *output_ = xyz_cloud_variant_t(cloud);
 

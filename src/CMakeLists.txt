@@ -27,6 +27,7 @@ set(ECTO_PCL_FILES
   filters/VoxelGrid.cpp
   io/CloudViewer.cpp
   io/CopyCloud.cpp
+  io/FakeCloud.cpp
 #  io/KinectGrabber.cpp
   io/MergeClouds.cpp
   io/NiConverters.cpp
