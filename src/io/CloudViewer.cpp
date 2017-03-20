@@ -146,7 +146,7 @@ namespace ecto
           viewer_->setCameraClipDistances(0.001, 100);
         }
 
-        while (!viewer_->wasStopped() && !boost::this_thread::interruption_requested())
+        while (!viewer_->wasStopped() /*&& !boost::this_thread::interruption_requested()*/)
         {
           {
             boost::mutex::scoped_try_lock lock(mtx);
@@ -158,19 +158,19 @@ namespace ecto
           }
           viewer_->spinOnce(20);
         }
-        if (!viewer_->wasStopped())
-          viewer_->close();
+//        if (!viewer_->wasStopped())
+//          viewer_->close();
       }
 
       struct show_dispatch: boost::static_visitor<>
       {
         show_dispatch(boost::shared_ptr<PCLVisualizer> viewer, const std::string& key, const Property& prop, int port)
-                : viewer(viewer)
-                  , key(key)
-                  , rend_prop(prop)
-                  , port(port)
-                  {
-                  }
+                    : viewer(viewer)
+                      , key(key)
+                      , rend_prop(prop)
+                      , port(port)
+                      {
+                      }
 
         //http://pointclouds.org/documentation/tutorials/pcl_visualizer.php#pcl-visualizer
         template<typename Point>
@@ -244,7 +244,7 @@ namespace ecto
         if (inputs.get<bool>("__quit__"))
         {
           viewer_->close();
-//          runner_thread_->interrupt();
+          //          runner_thread_->interrupt();
           runner_thread_->join();
           return ecto::QUIT;
         }
@@ -279,9 +279,9 @@ namespace ecto
               boost::shared_ptr<boost::signals2::scoped_connection> c(new boost::signals2::scoped_connection);
               *c = signal_.connect(show_dispatch_runner(dispatch, varient));
               jobs_.push_back(c);
-	    }
-	  }
-	}
+            }
+          }
+        }
 
         return ecto::OK;
       }
@@ -290,7 +290,7 @@ namespace ecto
       {
         if (runner_thread_ && runner_thread_->joinable())
         {
-          runner_thread_->interrupt();
+          //          runner_thread_->interrupt();
           runner_thread_->join();
         }
       }
