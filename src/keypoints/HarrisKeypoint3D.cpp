@@ -46,7 +46,6 @@ namespace ecto {
         params.declare<bool> ("non_max_suppression", "Whether non maxima suppression should be applied or the response for each point should be returned.", false);
         params.declare<bool> ("do_refine", "Whether the detected key points should be refined or not.", true);
         params.declare<int> ("spatial_locator", "The search method to use: FLANN(0), ORGANIZED(1).", 0);
-        params.declare<bool> ("verbose", "Output information about the computation.", false);
       }
 
       static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -63,7 +62,6 @@ namespace ecto {
         non_max_suppression_ = params["non_max_suppression"];
         do_refine_ = params["do_refine"];
         locator_ = params["spatial_locator"];
-        verbose_ = params["verbose"];
         output_ = outputs["output"];
         tictoc_ = outputs["tictoc"];
       }
@@ -143,13 +141,10 @@ namespace ecto {
         ::pcl::console::TicToc timer;
         timer.tic();
         impl.compute(*keypoints);
-        if (*verbose_)
-        {
-          double toc = timer.toc();
-          std::cout << "HarrisKeypoint3D" << " took " << toc << "ms. for a cloud with " << input->size() << " points" << std::endl;
+        double toc = timer.toc();
+        LOG4CXX_INFO(logger_, "HarrisKeypoint3D" << " took " << toc << "ms. for a cloud with " << input->size() << " points")
 
-          *tictoc_ = toc;
-        }
+        *tictoc_ = toc;
 
         *output_ = ecto::pcl::xyz_cloud_variant_t(keypoints);
         return ecto::OK;
@@ -159,11 +154,13 @@ namespace ecto {
       ecto::spore<float> threshold_, radius_;
       ecto::spore<bool> non_max_suppression_, do_refine_;
       ecto::spore<int> locator_;
-      ecto::spore<bool> verbose_;
       ecto::spore<double> tictoc_;
       ecto::spore<ecto::pcl::PointCloud> output_;
+
+      static log4cxx::LoggerPtr logger_ ;
     };
 
+    log4cxx::LoggerPtr HarrisKeypoint3D::logger_(log4cxx::Logger::getLogger("ecto.pcl"));
   }
 }
 

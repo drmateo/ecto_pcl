@@ -18,7 +18,6 @@ namespace ecto {
       static void declare_params(ecto::tendrils& params)
       {
         params.declare<float> ("radius", "The radius for normal estimation and non maxima suppression.", 0.01f);
-        params.declare<bool> ("verbose", "Output information about the computation.", false);
       }
 
       static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -30,7 +29,6 @@ namespace ecto {
       void configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
         radius_ = params["radius"];
-        verbose_ = params["verbose"];
         output_ = outputs["output"];
         tictoc_ = outputs["tictoc"];
       }
@@ -65,23 +63,22 @@ namespace ecto {
         ::pcl::console::TicToc timer;
         timer.tic();
         impl.filter(*keypoints);
-        if (*verbose_)
-        {
-          double toc = timer.toc();
-          std::cout << "UniformSampling" << " took " << toc << "ms. for a cloud with " << input->size() << " points" << std::endl;
-          *tictoc_ = toc;
-        }
+        double toc = timer.toc();
+        LOG4CXX_INFO(logger_, "UniformSampling" << " took " << toc << "ms. for a cloud with " << input->size() << " points")
 
+        *tictoc_ = toc;
         *output_ = ecto::pcl::xyz_cloud_variant_t(keypoints);
         return ecto::OK;
       }
 
       ecto::spore<float> radius_;
-      ecto::spore<bool> verbose_;
       ecto::spore<double> tictoc_;
       ecto::spore<ecto::pcl::PointCloud> output_;
+
+      static log4cxx::LoggerPtr logger_ ;
     };
 
+    log4cxx::LoggerPtr UniformSampling::logger_(log4cxx::Logger::getLogger("ecto.pcl"));
   }
 }
 

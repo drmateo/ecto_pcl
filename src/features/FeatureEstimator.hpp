@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#pragma once
+
 #include <ecto_pcl/ecto_pcl.hpp>
 #include <ecto_pcl/pcl_cell_with_normals.hpp>
 #include <ecto_pcl/pcl_cell.hpp>
@@ -38,7 +40,7 @@ namespace ecto {
 
     struct EstimationBase
     {
-      EstimationBase () {}
+      EstimationBase () : logger_(log4cxx::Logger::getLogger("ecto.pcl")){}
 
       virtual ~EstimationBase() {};
 
@@ -48,7 +50,6 @@ namespace ecto {
         params.declare<double> ("radius_search", "The sphere radius to use for determining the nearest neighbors used for feature estimation.", 0);
         params.declare<int> ("spatial_locator", "The search method to use: FLANN(0), ORGANIZED(1).",0);
         params.declare<std::string> ("name", "Feature name.", "feature");
-        params.declare<bool> ("verbose", "Output information about the computation.", false);
       }
 
       static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -64,7 +65,6 @@ namespace ecto {
         radius_ = params["radius_search"];
         locator_ = params["spatial_locator"];
         name_ = params["name"];
-        verbose_ = params["verbose"];
         surface_ = inputs["surface"];
         output_ = outputs["output"];
         tictoc_ = outputs["tictoc"];
@@ -73,8 +73,8 @@ namespace ecto {
       template<typename Point, typename EstimatorImpl>
       ReturnCode init(const typename ::pcl::PointCloud<Point>::ConstPtr& input, void* impl)
       {
-	if (!input || input->size() == 0)
-	  return ecto::OK;
+        if (!input || input->size() == 0)
+          return ecto::OK;
 
         ecto::spore<ecto::pcl::PointCloud>& surface = surface_;
         // If surface is declare but has less than 10 point stop process
@@ -112,26 +112,23 @@ namespace ecto {
         *output_ = ecto::pcl::feature_cloud_variant_t(output);
 
         ::pcl::console::TicToc timer;
-         timer.tic();
-         impl_cast->compute(*output);
-         if (*verbose_)
-         {
-           double toc = timer.toc();
-           std::cout << *name_ << " took " << toc << "ms. for a cloud with " << input->size() << " points" << std::endl;
-           *tictoc_ = toc;
-         }
-
-         *output_ = ecto::pcl::feature_cloud_variant_t(output);
+        timer.tic();
+        impl_cast->compute(*output);
+        double toc = timer.toc();
+        LOG4CXX_INFO(logger_, *name_ << " took " << toc << "ms. for a cloud with " << input->size() << " points")
+        *tictoc_ = toc;
+        *output_ = ecto::pcl::feature_cloud_variant_t(output);
       }
 
       ecto::spore<int> k_;
       ecto::spore<double> radius_;
       ecto::spore<int> locator_;
       ecto::spore<std::string> name_;
-      ecto::spore<bool> verbose_;
       ecto::spore<double> tictoc_;
       ecto::spore<ecto::pcl::PointCloud> surface_;
       ecto::spore<ecto::pcl::FeatureCloud> output_;
+
+      log4cxx::LoggerPtr logger_ ;
     };
 
     template<typename PointT, template <class A, class B> class EstimatorT>

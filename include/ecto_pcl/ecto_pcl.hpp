@@ -39,6 +39,9 @@
 #include <boost/preprocessor/punctuation/comma.hpp>
 #include <boost/preprocessor/cat.hpp>
 
+// include log4cxx header files.
+#include "log4cxx/logger.h"
+
 #define PCL_NO_PRECOMPILE
 
 #include <pcl/point_cloud.h>
@@ -187,6 +190,8 @@ template <template <class, class> class PclType, typename PointIn, typename Poin
 struct pcl_takes_point_trait2<PclType<PointIn, PointOut>, boost::shared_ptr<const pcl::PointCloud<PointIn> >, PointOut > : boost::true_type {};
 
 using ecto::tendrils;
+
+
 
 
 
