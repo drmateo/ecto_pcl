@@ -73,6 +73,11 @@ namespace ecto {
       {
         ::pcl::NormalEstimation<Point, ::pcl::Normal> impl;
         typename ::pcl::PointCloud< ::pcl::Normal >::Ptr normals(new typename ::pcl::PointCloud< ::pcl::Normal >);
+        normals->header = input->header;
+        normals->sensor_origin_ = input->sensor_origin_;
+        normals->sensor_orientation_ = input->sensor_orientation_;
+        normals->width = 0;
+        normals->height = 1;
 
         // If surface is declare but has less than 10 point stop process
         if (!input || input->size() == 0)
@@ -105,9 +110,6 @@ namespace ecto {
         impl.setSearchMethod(tree_);
         impl.setInputCloud(input);
         impl.compute(*normals);
-        normals->header = input->header;
-        normals->sensor_origin_ = input->sensor_origin_;
-        normals->sensor_orientation_ = input->sensor_orientation_;
         *output_ = ecto::pcl::feature_cloud_variant_t(normals);
         return ecto::OK;
       }
